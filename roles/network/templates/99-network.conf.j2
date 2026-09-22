@@ -1,0 +1,3 @@
+{% for item in network_sysctls | dict2items %}
+{{ item.key }}={{ item.value }}
+{% endfor %}

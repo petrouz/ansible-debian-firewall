@@ -1,0 +1,9 @@
+[Match]
+Name={{ interface.name }}
+
+[Network]
+Address={{ interface.address }}/{{ interface.prefix | default(24) }}
+{% if interface.gateway is defined %}Gateway={{ interface.gateway }}
+{% endif %}{% for vlan in interface.vlans | default([]) %}VLAN={{ vlan }}
+{% endfor %}{% if interface.bond is defined %}Bond={{ interface.bond }}
+{% endif %}DNS={{ interface.dns | default('1.1.1.1') }}

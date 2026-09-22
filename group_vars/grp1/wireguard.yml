@@ -1,0 +1,21 @@
+wireguard_vip_address: 10.10.10.2/24
+wireguard_key_mode: shared
+wireguard_shared_private_key: ''
+wireguard_interfaces:
+- name: wg0
+  address: 10.100.0.1/27
+  listen_port: 51820
+  peers:
+  - public_key: Th4iePA5MCx60pmIkfTN0RFbuLBiaaD+s08+Bwm/enA=
+    allowed_ips:
+    - 10.100.0.2/32
+    persistent_keepalive: 25
+  - public_key: /lBnq6+qE5NXPWc2tY8B8xzsWBkVFI5VVD/1DzxWIRc=
+    allowed_ips:
+    - 10.100.0.3/32
+    persistent_keepalive: 25
+  - public_key: Ep7z6Ck8h5GOIDJzO8+mihmWjJJ3xe4T1rnW59JzVw4=
+    allowed_ips:
+    - 10.100.0.4/32
+    persistent_keepalive: 25
+wireguard_enabled: true

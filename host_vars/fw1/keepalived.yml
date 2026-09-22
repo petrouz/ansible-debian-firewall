@@ -1,0 +1,4 @@
+keepalived_node_id: fw1
+keepalived_priority: 110
+keepalived_ha_address: 10.20.10.3
+keepalived_peer_ha_address: 10.20.10.4

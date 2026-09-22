@@ -1,0 +1,52 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
+  vars:
+    nftables_config:
+      path: /etc/nftables.conf
+      tables:
+        firewall:
+          type: inet
+          chains:
+            input:
+              type: filter
+              hook: input
+              priority: filter
+              policy: drop
+            forward:
+              type: filter
+              hook: forward
+              priority: filter
+              policy: accept
+            output:
+              type: filter
+              hook: output
+              priority: filter
+              policy: accept
+    nftables_hosts:
+      web: 10.20.10.7
+    nftables_host_groups:
+      public_web:
+        hosts: [web]
+    nftables_services:
+      web:
+        protocols:
+          tcp: [80, 443]
+    nftables_rules:
+      - chain: forward
+        source_interface: eth1
+        destination_interface: eth0
+        source_network: 10.20.10.0/24
+        action: accept
+      - chain: forward
+        source_interface: eth0
+        destination_interface: eth1
+        destination_group: public_web
+        service: web
+        protocol: tcp
+        action: accept
+  tasks:
+    - name: Include nftables role
+      ansible.builtin.include_role:
+        name: nftables

@@ -1,0 +1,14 @@
+---
+- name: Verify WireGuard role
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Verify WireGuard configuration
+      ansible.builtin.stat:
+        path: /etc/wireguard/wg0.conf
+      register: wireguard_config
+    - name: Assert WireGuard configuration
+      ansible.builtin.assert:
+        that:
+          - wireguard_config.stat.isreg
+          - wireguard_config.stat.mode == "0600"

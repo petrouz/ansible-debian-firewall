@@ -1,0 +1,25 @@
+---
+base_packages:
+  - locales
+  - bind9-dnsutils
+  - openssh-server
+  - iproute2
+  - iputils-ping
+  - procps
+  - netcat-openbsd
+  - tcpdump
+  - traceroute
+  - unattended-upgrades
+  - chrony
+  - rsyslog
+base_sshd_hardening_enabled: true
+base_rsyslog_rules: []
+base_snmpd_enabled: false
+base_chrony_servers:
+  - 0.debian.pool.ntp.org
+  - 1.debian.pool.ntp.org
+  - 2.debian.pool.ntp.org
+  - 3.debian.pool.ntp.org
+base_snmpd_rules: []
+base_locale: fr_FR.UTF-8
+base_timezone: Europe/Paris

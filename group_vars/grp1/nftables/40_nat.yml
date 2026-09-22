@@ -1,0 +1,31 @@
+nftables_nat_rules:
+  - chain: prerouting
+    source_interface: wan
+    protocol: tcp
+    ports:
+      - 80
+    destination_host: web
+    destination_port: 80
+    action: dnat
+  - chain: prerouting
+    source_interface: wan
+    protocol: tcp
+    ports:
+      - 443
+    destination_host: web
+    destination_port: 443
+    action: dnat
+  - chain: prerouting
+    source_interface: wan
+    protocol: tcp
+    service: mail
+    destination_host: mail
+    action: dnat
+  - chain: postrouting
+    source_network: 10.20.10.0/24
+    destination_interface: wan
+    action: masquerade
+  - chain: postrouting
+    source_network: 10.100.0.0/27
+    destination_interface: wan
+    action: masquerade

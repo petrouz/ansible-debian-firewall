@@ -1,0 +1,4 @@
+module(load="imjournal" StateFile="imjournal.state")
+{% for rule in base_rsyslog_rules %}
+{{ rule }}
+{% endfor %}

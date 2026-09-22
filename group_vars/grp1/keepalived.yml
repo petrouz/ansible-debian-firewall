@@ -1,0 +1,14 @@
+keepalived_virtual_ipaddresses:
+- address: 10.10.10.2
+  prefix: 24
+  interface: eth0
+- address: 10.20.10.2
+  prefix: 24
+  interface: eth1
+keepalived_password: ha
+keepalived_ha_interface: eth1
+keepalived_virtual_ip: 10.20.10.2
+keepalived_virtual_ip_prefix: 24
+keepalived_virtual_ipaddress: '{{ keepalived_virtual_ip }}/{{ keepalived_virtual_ip_prefix
+  }} dev {{ keepalived_ha_interface }}'
+keepalived_enabled: true

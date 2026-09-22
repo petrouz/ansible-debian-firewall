@@ -1,0 +1,11 @@
+---
+all:
+  children:
+    grp1:
+      hosts:
+        fw1:
+          ansible_host: 10.10.10.3
+          ansible_user: debian
+        fw2:
+          ansible_host: 10.10.10.4
+          ansible_user: debian

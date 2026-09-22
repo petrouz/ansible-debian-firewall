@@ -1,0 +1,7 @@
+#!/bin/sh
+{% for tunnel in wireguard_interfaces | default([]) %}
+systemctl restart wg-quick@{{ tunnel.name }}
+{% endfor %}
+{% if strongswan_enabled | default(false) %}
+systemctl start strongswan-starter
+{% endif %}

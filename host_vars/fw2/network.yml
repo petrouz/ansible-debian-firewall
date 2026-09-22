@@ -1,0 +1,9 @@
+network_interfaces:
+- name: eth0
+  address: 10.10.10.4
+  netmask: 255.255.255.0
+  gateway: 10.10.10.1
+- name: eth1
+  address: 10.20.10.4
+  netmask: 255.255.255.0
+network_routes: []

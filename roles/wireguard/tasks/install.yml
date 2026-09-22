@@ -1,0 +1,14 @@
+---
+- name: Install WireGuard
+  ansible.builtin.apt:
+    name: wireguard-tools
+    state: present
+    update_cache: true
+
+- name: Create WireGuard directory
+  ansible.builtin.file:
+    path: "{{ wireguard_key_directory }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"

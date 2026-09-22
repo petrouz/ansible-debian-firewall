@@ -1,0 +1,10 @@
+---
+- name: Restart WireGuard tunnels
+  ansible.builtin.systemd:
+    name: "wg-quick@{{ item.name }}"
+    state: restarted
+    enabled: true
+  loop: "{{ wireguard_interfaces }}"
+  when:
+    - wireguard_manage_service
+    - not keepalived_enabled | default(false)

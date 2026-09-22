@@ -1,0 +1,19 @@
+---
+- name: Verify strongSwan role
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Verify strongSwan configuration
+      ansible.builtin.stat:
+        path: /etc/ipsec.conf
+      register: strongswan_config
+    - name: Verify strongSwan secrets
+      ansible.builtin.stat:
+        path: /etc/ipsec.secrets
+      register: strongswan_secrets
+    - name: Assert strongSwan files
+      ansible.builtin.assert:
+        that:
+          - strongswan_config.stat.isreg
+          - strongswan_secrets.stat.isreg
+          - strongswan_secrets.stat.mode == "0600"

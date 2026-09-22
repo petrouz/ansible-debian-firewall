@@ -1,0 +1,32 @@
+---
+- name: Configure FRR
+  when: frr_enabled
+  block:
+    - name: Install FRR
+      ansible.builtin.apt:
+        name: frr
+        state: present
+        update_cache: true
+    - name: Deploy FRR daemons
+      ansible.builtin.template:
+        src: daemons.j2
+        dest: /etc/frr/daemons
+        owner: frr
+        group: frr
+        mode: "0640"
+      notify: Restart FRR
+    - name: Deploy FRR configuration
+      ansible.builtin.template:
+        src: frr.conf.j2
+        dest: /etc/frr/frr.conf
+        owner: frr
+        group: frr
+        mode: "0640"
+      notify: Restart FRR
+
+- name: Ensure FRR is started and enabled
+  ansible.builtin.systemd:
+    name: frr
+    state: started
+    enabled: true
+  when: frr_enabled

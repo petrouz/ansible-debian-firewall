@@ -1,0 +1,20 @@
+---
+- name: Prepare
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Check python3 presence
+      ansible.builtin.raw: test -x /usr/bin/python3
+      register: nftables_has_python
+      changed_when: false
+      failed_when: false
+
+    - name: Install python3 in the container
+      ansible.builtin.raw: apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y python3
+      when: nftables_has_python.rc != 0
+      changed_when: true
+
+    - name: Use a direct DNS resolver
+      ansible.builtin.shell:
+        cmd: printf 'nameserver 8.8.8.8\n' > /etc/resolv.conf
+      changed_when: false

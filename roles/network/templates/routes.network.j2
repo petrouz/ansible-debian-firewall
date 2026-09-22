@@ -1,0 +1,8 @@
+{% for route in network_routes %}[Match]
+Name={{ route.interface }}
+
+[Route]
+Destination={{ route.destination }}
+Gateway={{ route.gateway }}
+
+{% endfor %}

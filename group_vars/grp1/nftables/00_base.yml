@@ -1,0 +1,27 @@
+nftables_config:
+  vars: {}
+  tables:
+    firewall:
+      type: inet
+      chains:
+        input:
+          hook: input
+          policy: drop
+        forward:
+          hook: forward
+          policy: drop
+        output:
+          hook: output
+          policy: accept
+        postrouting:
+          type: nat
+          hook: postrouting
+          policy: accept
+        prerouting:
+          type: nat
+          hook: prerouting
+          policy: accept
+
+nftables_interfaces:
+  wan: eth0
+  lan: eth1

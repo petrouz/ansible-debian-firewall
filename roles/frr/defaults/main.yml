@@ -1,0 +1,6 @@
+---
+frr_enabled: false
+frr_daemons:
+  - zebra
+  - bgpd
+frr_configs: {}

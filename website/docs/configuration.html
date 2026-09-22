@@ -1,0 +1,98 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Configuration - ansible-debian-firewall</title><link rel="stylesheet" href="../assets/app.css"><link rel="icon" type="image/svg+xml" href="../assets/fire-icon.svg"></head><body class="doc-page"><header class="border-b border-slate-900 bg-slate-100 band-dark">
+  <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <a href="../index.html" class="flex items-center gap-2.5" aria-label="ansible-debian-firewall home">
+      <span class="wordmark"><span>ansible-</span><span class="wordmark-debian">debian</span><span>-firewall</span></span>
+      
+    </a>
+    <nav class="hidden md:flex items-center gap-6 text-base text-slate-900">
+      <a href="../why.html" class="nav-link hover:text-slate-900">Why and who is it for</a><a href="quickstart.html" class="nav-link active-page hover:text-slate-900">Documentation</a>
+      <a href="https://github.com/petrouz/muros" class="inline-flex items-center gap-2 bg-red-600 text-white hover:bg-red-700 font-semibold px-3.5 py-1.5 rounded"><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63 0 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>View the playbook</a>
+    </nav><details class="md:hidden relative"><summary class="list-none cursor-pointer p-2 -mr-2 select-none" aria-label="Open menu"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg></summary><div class="absolute right-0 mt-2 bg-white border border-slate-200 rounded shadow-lg py-2 w-52 z-20 flex flex-col text-sm"><a href="../why.html" class="nav-link hover:text-slate-900 px-4 py-2 hover:bg-slate-100">Why and who is it for</a><a href="quickstart.html" class="nav-link active-page hover:text-slate-900 px-4 py-2 hover:bg-slate-100">Documentation</a><a href="https://github.com/petrouz/muros" class="px-4 py-2 mt-1 mx-3 bg-red-600 text-white hover:bg-red-700 font-semibold rounded text-center">View the playbook</a></div></details>
+  </div>
+</header><main class="wiki-layout"><aside class="wiki-sidebar"><p class="wiki-label">FIREWALL WIKI</p><a href="quickstart.html">Quickstart</a><a href="architecture.html">Architecture</a><a class="wiki-current" href="configuration.html">Configuration</a><a href="operations.html">Operations</a></aside><div class="wiki-content"><p class="mono text-sm text-red-600">CONFIGURATION</p><h1 class="mt-3 text-4xl font-bold text-slate-900">Variables by use case</h1><p class="mt-4 text-lg text-slate-700">Change the variables below to describe the firewall. Each example maps to files currently present in this repository.</p><article><h2>Give an interface an address</h2><p>Put node-specific addresses in <code>host_vars/fw1/network.yml</code> and <code>host_vars/fw2/network.yml</code>. The role writes systemd-networkd configuration from these values.</p><pre><code>network_interfaces:
+  - name: eth0
+    address: 10.10.10.3
+    netmask: 255.255.255.0
+    gateway: 10.10.10.1
+  - name: eth1
+    address: 10.20.10.3
+    netmask: 255.255.255.0</code></pre><p>Change the address, mask and gateway for the target node. Keep the interface names identical on both HA nodes unless the templates and inventory explicitly account for the difference.</p></article><article><h2>Define reusable firewall objects</h2><p>Use <code>group_vars/grp1/nftables/10_objects.yml</code>. Hosts receive names, host groups combine them, and services define protocol and ports.</p><pre><code>nftables_hosts:
+  web: 10.20.10.7
+
+nftables_host_groups:
+  public_web:
+    hosts:
+      - web
+
+nftables_services:
+  web:
+    protocols:
+      tcp: [80, 443]</code></pre><p>The name <code>public_web</code> can then be used by a forward rule. Do not put an IP directly in every rule when the same destination is reused.</p></article><article><h2>Publish a service</h2><p>Publishing requires two files. <code>40_nat.yml</code> translates the public packet. <code>30_forward.yml</code> authorizes the translated packet.</p><pre><code>nftables_nat_rules:
+  - chain: prerouting
+    source_interface: wan
+    protocol: tcp
+    ports: [443]
+    destination_host: web
+    destination_port: 443
+    action: dnat
+
+nftables_forward_rules:
+  - chain: forward
+    source_interface: wan
+    destination_interface: lan
+    destination_group: public_web
+    service: web
+    protocol: tcp
+    action: accept</code></pre><p>Adding DNAT without the forward rule does not publish the service. Adding the forward rule without DNAT accepts a packet that still has no backend destination.</p></article><article><h2>Allow outbound NAT</h2><p>Masquerade belongs in <code>40_nat.yml</code>; forwarding permission belongs in <code>30_forward.yml</code>.</p><pre><code>nftables_nat_rules:
+  - chain: postrouting
+    source_network: 10.20.10.0/24
+    destination_interface: wan
+    action: masquerade
+
+nftables_forward_rules:
+  - chain: forward
+    source_interface: lan
+    destination_interface: wan
+    source_network: 10.20.10.0/24
+    action: accept</code></pre></article><article><h2>Add a WireGuard peer</h2><p>Peers are defined in <code>group_vars/grp1/wireguard.yml</code>. Use one unique address per peer and restrict <code>allowed_ips</code> to that peer.</p><pre><code>wireguard_interfaces:
+  - name: wg0
+    address: 10.100.0.1/27
+    listen_port: 51820
+    peers:
+      - public_key: PEER_PUBLIC_KEY
+        allowed_ips:
+          - 10.100.0.2/32
+        persistent_keepalive: 25</code></pre><p>Keep private keys in Vault. Check the result with <code>wg show</code> and verify that the peer handshake timestamp changes.</p></article><article><h2>Enable OSPF on a node</h2><p>Shared enablement belongs in <code>group_vars/grp1/frr.yml</code>; router identity and protocol configuration belong in <code>host_vars/fw1/frr.yml</code>.</p><pre><code>frr_enabled: true
+
+frr_daemons:
+  - zebra
+  - ospfd
+
+frr_configs:
+  ospf: |
+    router ospf
+      ospf router-id 10.10.10.3
+      network 10.10.10.0/24 area 0
+      passive-interface eth1</code></pre><p>Use <code>vtysh -c "show ip ospf neighbor"</code> to verify adjacency and <code>ip route</code> to verify kernel installation.</p></article><article><h2>Configure HA</h2><p>Pair-wide VIPs and passwords belong in <code>group_vars/grp1/keepalived.yml</code>. Priority and peer addresses belong in each host file.</p><pre><code>keepalived_enabled: true
+keepalived_virtual_ip: 10.20.10.2
+keepalived_ha_interface: eth1
+
+keepalived_node_id: fw1
+keepalived_priority: 110
+keepalived_ha_address: 10.20.10.3
+keepalived_peer_ha_address: 10.20.10.4</code></pre><p>Only the preferred node should have the higher priority. Validate with <code>systemctl status keepalived</code> and <code>ip addr show</code>.</p></article><article><h2>Validate before applying</h2><pre><code>ansible-inventory -i inventory.yml --host fw1
+ansible-playbook -i inventory.yml site.yml --syntax-check
+ansible-playbook -i inventory.yml site.yml --check --diff
+ansible-playbook -i inventory.yml site.yml</code></pre></article></div></main><footer class="border-t border-slate-900 bg-slate-100 py-4 band-dark">
+  <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-base text-slate-900">
+    <div class="flex items-center gap-2">
+      <span class="wordmark"><span>ansible-</span><span class="wordmark-debian">debian</span><span>-firewall</span></span>
+    </div>
+    <div class="flex items-center gap-5 sm:order-2">
+      <a href="https://github.com/petrouz/muros/blob/main/LICENSE" class="hover:text-slate-900">Legal</a>
+      <a href="https://github.com/petrouz/ansible-debian-firewall/issues" class="hover:text-slate-900">Issues</a>
+      <a href="https://github.com/petrouz/ansible-debian-firewall/blob/main/LICENSE" class="hover:text-slate-900">License</a>
+      <a href="https://github.com/petrouz/ansible-debian-firewall" aria-label="GitHub" title="GitHub" class="ico-gh hover:opacity-70"><svg width="30" height="30" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82.73.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+    </div>
+  </div>
+</footer></body></html>

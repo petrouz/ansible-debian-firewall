@@ -1,0 +1,53 @@
+name: Ansible validation
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Configure Ansible Vault password
+        env:
+          ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+        run: printf '%s\n' "$ANSIBLE_VAULT_PASSWORD" > .vault_pass
+      - name: Install validation tools
+        run: pip install ansible-core ansible-lint yamllint molecule molecule-plugins[docker]
+      - name: Install Ansible collections
+        run: ansible-galaxy collection install -r requirements.yml
+      - name: Run yamllint
+        run: yamllint .
+      - name: Run ansible-lint
+        run: ansible-lint
+      - name: Check playbook syntax
+        run: ansible-playbook site.yml --syntax-check -i inventory.yml
+      - name: Run Molecule base
+        working-directory: roles/base
+        env:
+          ANSIBLE_ROLES_PATH: ${{ github.workspace }}/roles
+        run: molecule test -s default
+      - name: Run Molecule nftables
+        working-directory: roles/nftables
+        env:
+          ANSIBLE_ROLES_PATH: ${{ github.workspace }}/roles
+        run: molecule test -s default
+      - name: Run Molecule network
+        working-directory: roles/network
+        env:
+          ANSIBLE_ROLES_PATH: ${{ github.workspace }}/roles
+        run: molecule test -s default
+      - name: Run Molecule strongSwan
+        working-directory: roles/strongswan
+        env:
+          ANSIBLE_ROLES_PATH: ${{ github.workspace }}/roles
+        run: molecule test -s default
+      - name: Run Molecule WireGuard
+        working-directory: roles/wireguard
+        env:
+          ANSIBLE_ROLES_PATH: ${{ github.workspace }}/roles
+        run: molecule test -s default

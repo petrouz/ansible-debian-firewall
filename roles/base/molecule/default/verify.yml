@@ -1,0 +1,23 @@
+---
+- name: Verify base role
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Gather package facts
+      ansible.builtin.package_facts:
+        manager: apt
+
+    - name: Verify diagnostic packages
+      ansible.builtin.assert:
+        that:
+          - "item in ansible_facts.packages"
+      loop:
+        - bind9-dnsutils
+        - openssh-server
+        - iproute2
+        - iputils-ping
+        - netcat-openbsd
+        - tcpdump
+        - traceroute
+        - unattended-upgrades
+        - rsyslog

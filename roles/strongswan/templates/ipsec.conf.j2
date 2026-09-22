@@ -1,0 +1,18 @@
+config setup
+    uniqueids=no
+
+{% for name, connection in strongswan_connections.items() %}
+conn {{ name }}
+    keyexchange={{ connection.keyexchange | default('ikev2') }}
+    type={{ connection.type | default('tunnel') }}
+    auto={{ connection.auto | default('start') }}
+    left={{ connection.left }}
+    leftsubnet={{ connection.leftsubnet }}
+    right={{ connection.right }}
+    rightsubnet={{ connection.rightsubnet }}
+    authby={{ connection.authby | default('psk') }}
+    ike={{ connection.ike | default('aes256gcm16-prfsha256-ecp256') }}
+    esp={{ connection.esp | default('aes256gcm16-ecp256') }}
+    dpdaction={{ connection.dpdaction | default('restart') }}
+    dpddelay={{ connection.dpddelay | default('30s') }}
+{% endfor %}

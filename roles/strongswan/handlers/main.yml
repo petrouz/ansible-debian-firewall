@@ -1,0 +1,9 @@
+---
+- name: Restart strongSwan
+  ansible.builtin.systemd:
+    name: strongswan-starter
+    state: restarted
+    enabled: true
+  when:
+    - strongswan_manage_service
+    - not keepalived_enabled | default(false)

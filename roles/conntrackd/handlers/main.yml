@@ -1,0 +1,5 @@
+---
+- name: Restart conntrackd
+  ansible.builtin.service:
+    name: conntrackd
+    state: restarted

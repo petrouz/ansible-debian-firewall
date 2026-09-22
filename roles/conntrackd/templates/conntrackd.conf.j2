@@ -1,0 +1,37 @@
+  Sync {
+    Mode FTFW {
+    }
+    Multicast {
+      IPv4_address {{ conntrackd_multicast_address }}
+      Group 3780
+      IPv4_interface {{ keepalived_ha_address }}
+      Interface {{ keepalived_ha_interface }}
+      SndSocketBuffer 1249280
+      RcvSocketBuffer 1249280
+      Checksum on
+    }
+  }
+
+  General {
+    HashSize 32768
+    HashLimit 65535
+    Syslog daemon
+    LockFile /var/lock/conntrackd.lock
+    UNIX {
+      Path /var/run/conntrackd.sock
+    }
+    SocketBufferSize 1249280
+    SocketBufferSizeMaxGrown 2518560
+    Filter From Userspace {
+      Protocol Accept {
+        TCP
+        UDP
+        SCTP
+        DCCP
+      }
+      Address Ignore {
+        IPv4_address 127.0.0.1
+        IPv4_address 239.0.0.1
+      }
+    }
+  }

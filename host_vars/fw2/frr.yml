@@ -1,0 +1,9 @@
+frr_daemons:
+  - zebra
+  - ospfd
+frr_configs:
+  ospf: |
+    router ospf
+      ospf router-id 10.10.10.4
+      network 10.10.10.0/24 area 0
+      passive-interface eth1

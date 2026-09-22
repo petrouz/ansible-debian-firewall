@@ -1,0 +1,44 @@
+---
+- name: Configure keepalived
+  when:
+    - keepalived_enabled
+  block:
+    - name: Install keepalived
+      ansible.builtin.apt:
+        name: keepalived
+        state: present
+        update_cache: true
+
+    - name: Deploy keepalived MASTER notify script
+      ansible.builtin.template:
+        src: notify-master.sh.j2
+        dest: /usr/local/sbin/keepalived-master
+        owner: root
+        group: root
+        mode: "0750"
+
+    - name: Deploy keepalived BACKUP notify script
+      ansible.builtin.template:
+        src: notify-backup.sh.j2
+        dest: /usr/local/sbin/keepalived-backup
+        owner: root
+        group: root
+        mode: "0750"
+
+    - name: Deploy keepalived configuration
+      ansible.builtin.template:
+        src: keepalived.conf.j2
+        dest: /etc/keepalived/keepalived.conf
+        owner: root
+        group: root
+        mode: "0600"
+        validate: keepalived --config-test --use-file %s
+      notify: Restart keepalived
+
+- name: Ensure keepalived is started and enabled
+  ansible.builtin.systemd:
+    name: keepalived
+    state: started
+    enabled: true
+  when:
+    - keepalived_enabled

@@ -1,0 +1,12 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: true
+  vars:
+    network_interfaces: []
+    network_routes: []
+    network_sysctls: {}
+  tasks:
+    - name: Include network role
+      ansible.builtin.include_role:
+        name: network

@@ -1,0 +1,8 @@
+[NetDev]
+Name={{ bond.name }}
+Kind=bond
+
+[Bond]
+Mode={{ bond.mode | default('802.3ad') }}
+{% if bond.transmit_hash_policy is defined %}TransmitHashPolicy={{ bond.transmit_hash_policy }}
+{% endif %}

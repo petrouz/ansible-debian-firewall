@@ -1,0 +1,116 @@
+---
+- name: Assert Debian version
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.os_family == "Debian"
+      - ansible_facts.distribution_major_version | int <= 13
+
+- name: Install base packages
+  ansible.builtin.apt:
+    name: "{{ base_packages }}"
+    state: present
+    update_cache: true
+
+- name: Configure unattended upgrades
+  ansible.builtin.template:
+    src: 52unattended-upgrades.j2
+    dest: /etc/apt/apt.conf.d/52unattended-upgrades
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Generate system locale
+  ansible.builtin.command:
+    cmd: "locale-gen {{ base_locale }}"
+  changed_when: false
+
+- name: Configure system locale
+  ansible.builtin.template:
+    src: locale.j2
+    dest: /etc/default/locale
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Configure system timezone
+  ansible.builtin.file:
+    src: "/usr/share/zoneinfo/{{ base_timezone }}"
+    dest: /etc/localtime
+    state: link
+    force: true
+
+- name: Configure timezone name
+  ansible.builtin.copy:
+    content: "{{ base_timezone }}\n"
+    dest: /etc/timezone
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Create SSH configuration directory
+  ansible.builtin.file:
+    path: /etc/ssh/sshd_config.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Configure SSH hardening
+  ansible.builtin.template:
+    src: 00-sshd-hardening.conf.j2
+    dest: /etc/ssh/sshd_config.d/00-base-hardening.conf
+    owner: root
+    group: root
+    mode: "0644"
+    validate: /usr/sbin/sshd -t -f %s
+  when: base_sshd_hardening_enabled
+  notify: Restart ssh
+
+- name: Install snmpd
+  ansible.builtin.apt:
+    name: snmpd
+    state: present
+  when: base_snmpd_enabled
+
+- name: Configure chrony sources
+  ansible.builtin.template:
+    src: chrony.sources.j2
+    dest: /etc/chrony/sources.d/10-base.sources
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart chrony
+
+- name: Configure snmpd
+  ansible.builtin.template:
+    src: snmpd.conf.j2
+    dest: /etc/snmp/snmpd.conf
+    owner: root
+    group: root
+    mode: "0600"
+  when: base_snmpd_enabled
+  notify: Restart snmpd
+
+- name: Configure rsyslog forwarding
+  ansible.builtin.template:
+    src: rsyslog.conf.j2
+    dest: /etc/rsyslog.d/10-base.conf
+    owner: root
+    group: root
+    mode: "0644"
+  when: base_rsyslog_rules | length > 0
+  notify: Restart rsyslog
+
+- name: Remove empty rsyslog override
+  ansible.builtin.file:
+    path: /etc/rsyslog.d/10-base.conf
+    state: absent
+  when: base_rsyslog_rules | length == 0
+  notify: Restart rsyslog
+
+- name: Enable snmpd
+  ansible.builtin.service:
+    name: "snmpd"
+    enabled: true
+    state: started
+  when: base_snmpd_enabled

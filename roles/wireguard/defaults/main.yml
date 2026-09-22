@@ -1,0 +1,14 @@
+---
+wireguard_interfaces: []
+wireguard_enabled: false
+wireguard_manage_service: true
+wireguard_key_directory: /etc/wireguard
+
+# The private key is optional, per tunnel, within wireguard_interfaces.
+# Leave it out to generate the key on the primary and propagate to the secondary.
+# To pin a key, add it to the interface definition and encrypt with ansible-vault:
+#   wireguard_interfaces:
+#     - name: wg0
+#       private_key: "PRIVATE_KEY"
+#       address: 10.0.0.1/30
+wireguard_ha_primary: "{{ groups[group_names[0]] | first }}"

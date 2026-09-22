@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1f2638">
+<meta name="google-site-verification" content="gUUe2BSkVhGthwtAdlY94ba7EjI4Y8TjYVEQx291vlQ">
+<title>ansible-debian-firewall - Turn Linux into a code-defined firewall</title>
+<meta name="description" content="Production-oriented Ansible roles for deploying secure, auditable and reproducible Debian 13 and Debian 14 firewalls.">
+<link rel="icon" type="image/svg+xml" href="assets/fire-icon.svg">
+<link rel="apple-touch-icon" href="/assets/fire-icon.svg">
+<link rel="icon" type="image/svg+xml" href="assets/fire-icon.svg">
+<link rel="stylesheet" href="assets/app.css?v=b4d7843f7456">
+<link rel="preload" as="image" href="assets/appliance-illustration.webp" fetchpriority="high">
+<link rel="canonical" href="https://petrouz.github.io/ansible-debian-firewall/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ansible-debian-firewall">
+<meta property="og:locale" content="en_US">
+<meta property="og:url" content="https://petrouz.github.io/ansible-debian-firewall/">
+<meta property="og:title" content="ansible-debian-firewall - Turn Linux into a code-defined firewall">
+<meta property="og:description" content="Production-oriented Ansible roles for deploying secure, auditable and reproducible Debian 13 and Debian 14 firewalls.">
+<meta property="og:image" content="https://petrouz.github.io/ansible-debian-firewall/assets/og-cover.jpg">
+<meta property="og:image:secure_url" content="https://petrouz.github.io/ansible-debian-firewall/assets/og-cover.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="670">
+<meta property="og:image:alt" content="ansible-debian-firewall - turn Linux into a firewall">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ansible-debian-firewall - Turn Linux into a code-defined firewall">
+<meta name="twitter:description" content="Production-oriented Ansible roles for deploying secure, auditable and reproducible Debian 13 and Debian 14 firewalls.">
+<meta name="twitter:image" content="https://petrouz.github.io/ansible-debian-firewall/assets/og-cover.jpg">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://petrouz.github.io/ansible-debian-firewall/#org",
+      "name": "ansible-debian-firewall",
+      "url": "https://petrouz.github.io/ansible-debian-firewall/",
+      "logo": "https://petrouz.github.io/ansible-debian-firewall/assets/logo-dark.svg",
+      "sameAs": [
+        "https://github.com/petrouz/ansible-debian-firewall"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://petrouz.github.io/ansible-debian-firewall/#website",
+      "name": "ansible-debian-firewall",
+      "url": "https://petrouz.github.io/ansible-debian-firewall/",
+      "publisher": {
+        "@id": "https://petrouz.github.io/ansible-debian-firewall/#org"
+      }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "ansible-debian-firewall",
+      "applicationCategory": "SecurityApplication",
+      "applicationSubCategory": "Firewall",
+      "operatingSystem": "Debian GNU/Linux 13 (Trixie)",
+      "url": "https://petrouz.github.io/ansible-debian-firewall/",
+      "license": "https://github.com/petrouz/ansible-debian-firewall/blob/main/LICENSE",
+      "description": "Production-oriented Ansible roles for deploying secure, auditable and reproducible Debian 13 and Debian 14 firewalls.",
+      "author": {
+        "@id": "https://petrouz.github.io/ansible-debian-firewall/#org"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body class="bg-white text-slate-900 antialiased">
+<a href="#main" class="skip-link">Skip to content</a>
+
+<header class="border-b border-slate-900 bg-slate-100 band-dark">
+  <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <a href="https://petrouz.github.io/ansible-debian-firewall/" class="flex items-center gap-2.5" aria-label="ansible-debian-firewall home">
+      <span class="wordmark"><span>ansible-</span><span class="wordmark-debian">debian</span><span>-firewall</span></span>
+      
+    </a>
+    <nav class="hidden md:flex items-center gap-6 text-base text-slate-900">
+      <a href="why.html" class="nav-link hover:text-slate-900">Why and who is it for</a><a href="docs/quickstart.html" class="nav-link hover:text-slate-900">Documentation</a>
+      <a href="https://github.com/petrouz/muros" class="inline-flex items-center gap-2 bg-red-600 text-white hover:bg-red-700 font-semibold px-3.5 py-1.5 rounded"><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63 0 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>View the playbook</a>
+    </nav><details class="md:hidden relative"><summary class="list-none cursor-pointer p-2 -mr-2 select-none" aria-label="Open menu"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg></summary><div class="absolute right-0 mt-2 bg-white border border-slate-200 rounded shadow-lg py-2 w-52 z-20 flex flex-col text-sm"><a href="why.html" class="nav-link hover:text-slate-900 px-4 py-2 hover:bg-slate-100">Why and who is it for</a><a href="docs/quickstart.html" class="nav-link hover:text-slate-900 px-4 py-2 hover:bg-slate-100">Documentation</a><a href="https://github.com/petrouz/muros" class="px-4 py-2 mt-1 mx-3 bg-red-600 text-white hover:bg-red-700 font-semibold rounded text-center">View the playbook</a></div></details>
+  </div>
+</header>
+
+<section id="main" tabindex="-1">
+  <div class="max-w-6xl mx-auto px-6 pt-8 pb-16 lg:pt-10 lg:pb-20">
+    <div class="grid grid-cols-1 lg:grid-cols-[3fr_4fr] gap-10 lg:gap-8 items-center">
+      <div>
+        <h1 class="text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">Turn Linux into a code-defined firewall</h1>
+        <p class="mt-4 text-base lg:text-lg text-slate-900 leading-relaxed">ansible-debian-firewall is a collection of Ansible roles for deploying standard Debian firewalls. It covers the base system, network configuration, nftables, VPN, dynamic routing and high availability without replacing Debian with a proprietary appliance.</p>
+
+        <div class="mt-6 flex flex-col sm:flex-row gap-3">
+          <a href="https://github.com/petrouz/muros" class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-red-600 text-white hover:bg-red-700 font-semibold rounded"><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63 0 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>View the playbook</a>
+        </div>
+      </div>
+      <div class="lg:-mr-8 xl:-mr-12">
+        <img width="1600" height="1195" decoding="async" fetchpriority="high" src="assets/appliance-illustration.webp" alt="ansible-debian-firewall 1U rack appliance" class="w-full block">
+      </div>
+    </div>
+    <h2 class="sr-only">What ansible-debian-firewall gives you</h2>
+    <div class="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-7">
+      <div>
+        <h3 class="text-base font-semibold text-slate-900 border-l-2 border-red-600 pl-3">Free and open source</h3>
+        <p class="mt-2 text-sm text-slate-900 pl-3">BSD-2-Clause. No edition, no paywall, no subscription.</p>
+      </div>
+      <div>
+        <h3 class="text-base font-semibold text-slate-900 border-l-2 border-red-600 pl-3">Runs on your hardware</h3>
+        <p class="mt-2 text-sm text-slate-900 pl-3">Built on Debian Linux: mini-PCs, servers, VMs and modern NICs.</p>
+      </div>
+      <div>
+        <h3 class="text-base font-semibold text-slate-900 border-l-2 border-red-600 pl-3">Ansible-driven</h3>
+        <p class="mt-2 text-sm text-slate-900 pl-3">Inventory and variables describe the target system. Ansible renders the configuration and applies it through standard Debian services.</p>
+      </div>
+      <div>
+        <h3 class="text-base font-semibold text-slate-900 border-l-2 border-red-600 pl-3">Native, tested core</h3>
+        <p class="mt-2 text-sm text-slate-900 pl-3">Every service integrated and tested together, upgraded as one.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-16 bg-red-600 text-white border-y border-red-700 band-dark">
+  <div class="max-w-6xl mx-auto px-6">
+    <h2 class="text-2xl font-bold text-white">A real Ansible run</h2>
+    <p class="mt-2 text-white max-w-2xl">The playbook applies the roles in order, validates the generated nftables policy before loading it and reports every task for both firewall nodes.</p>
+
+    <figure class="mt-8">
+      <div class="rounded-2xl border border-slate-700 shadow-lg overflow-hidden bg-black" role="img" aria-label="ansible-debian-firewall playbook preview">
+        <div class="flex items-center gap-2 px-3 py-2 bg-slate-900 border-b border-slate-700">
+          <span class="flex gap-1.5 shrink-0"><span class="w-3 h-3 rounded-full bg-red-400"></span><span class="w-3 h-3 rounded-full bg-yellow-400"></span><span class="w-3 h-3 rounded-full bg-green-400"></span></span>
+          <span class="text-xs text-slate-400 font-mono">ansible-debian-firewall · playbook preview</span>
+        </div>
+        <pre id="playbook-console" class="p-5 h-[360px] text-sm leading-6 text-emerald-300 font-mono whitespace-pre-wrap overflow-y-auto"></pre>
+      </div>
+    </figure>
+
+    <div class="mt-8 text-center">
+      
+    </div>
+  </div>
+</section>
+
+<section class="py-16"><div class="max-w-6xl mx-auto px-6"><h2 class="text-2xl font-bold text-slate-900">Roles and capabilities</h2><p class="mt-2 text-slate-700 max-w-3xl">Each row maps directly to a role or a group of tasks in the repository. There is no comparison with another product: this is the scope of the Ansible collection.</p><div class="mt-8 overflow-x-auto"><table class="w-full text-sm border border-slate-300 rounded-none" style="border-radius:0!important"><thead class="bg-red-600 text-white rounded-none" style="border-radius:0!important"><tr><th class="text-left font-semibold px-4 py-3">Role</th><th class="text-left font-semibold px-4 py-3">What it configures</th><th class="text-left font-semibold px-4 py-3">Main components</th></tr></thead><tbody class="divide-y divide-slate-200"><tr><td class="px-4 py-3 font-semibold text-red-600">base</td><td class="px-4 py-3">Common Debian baseline</td><td class="px-4 py-3">chrony, rsyslog, unattended-upgrades, SSH</td></tr><tr><td class="px-4 py-3 font-semibold text-red-600">network</td><td class="px-4 py-3">Interfaces and routing</td><td class="px-4 py-3">systemd-networkd, VLANs, bridges, routes, sysctl</td></tr><tr><td class="px-4 py-3 font-semibold text-red-600">nftables</td><td class="px-4 py-3">Filtering and NAT</td><td class="px-4 py-3">stateful rules, logging, aliases, policy defaults</td></tr><tr><td class="px-4 py-3 font-semibold text-red-600">wireguard and strongswan</td><td class="px-4 py-3">Encrypted connectivity</td><td class="px-4 py-3">WireGuard peers and IPsec tunnels</td></tr><tr><td class="px-4 py-3 font-semibold text-red-600">frr</td><td class="px-4 py-3">Dynamic routing</td><td class="px-4 py-3">OSPF and BGP</td></tr><tr><td class="px-4 py-3 font-semibold text-red-600">keepalived and conntrackd</td><td class="px-4 py-3">High availability</td><td class="px-4 py-3">VRRP and connection state synchronization</td></tr></tbody></table></div><p class="mt-5 text-slate-700">Use <a href="https://github.com/petrouz/muros" class="text-red-600 font-semibold hover:underline">the repository</a> for requirements, repository layout and the production workflow.</p></div></section>
+
+<footer class="border-t border-slate-900 bg-slate-100 py-4 band-dark">
+  <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-base text-slate-900">
+    <div class="flex items-center gap-2">
+      <span class="wordmark"><span>ansible-</span><span class="wordmark-debian">debian</span><span>-firewall</span></span>
+    </div>
+    <div class="flex items-center gap-5 sm:order-2">
+      <a href="https://github.com/petrouz/muros/blob/main/LICENSE" class="hover:text-slate-900">Legal</a>
+      <a href="https://github.com/petrouz/ansible-debian-firewall/issues" class="hover:text-slate-900">Issues</a>
+      <a href="https://github.com/petrouz/ansible-debian-firewall/blob/main/LICENSE" class="hover:text-slate-900">License</a>
+      <a href="https://github.com/petrouz/ansible-debian-firewall" aria-label="GitHub" title="GitHub" class="ico-gh hover:opacity-70"><svg width="30" height="30" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82.73.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+    </div>
+  </div>
+</footer>
+
+
+
+
+
+
+
+<script src="assets/playbook-console.js" defer></script>
+</body>
+</html>

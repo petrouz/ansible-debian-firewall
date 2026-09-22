@@ -1,0 +1,13 @@
+---
+- name: Deploy Debian firewalls
+  hosts: grp1
+  become: true
+  roles:
+    - { role: base, tags: [base] }
+    - { role: network, tags: [network] }
+    - { role: nftables, tags: [nftables] }
+    - { role: wireguard, tags: [wireguard] }
+    - { role: strongswan, tags: [strongswan] }
+    - { role: frr, tags: [frr] }
+    - { role: conntrackd, tags: [conntrackd] }
+    - { role: keepalived, tags: [keepalived] }

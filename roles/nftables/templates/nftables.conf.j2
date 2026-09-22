@@ -1,0 +1,55 @@
+#!/usr/sbin/nft -f
+flush ruleset
+{% set nftables_all_rules =
+  (nftables_rules | default([], true))
+  + (nftables_input_rules | default([], true))
+  + (nftables_forward_rules | default([], true))
+  + (nftables_nat_rules | default([], true))
+%}
+{% for name, value in (nftables_config.vars | default({}, true)).items() %}
+define {{ name }} = {{ value }}
+{% endfor %}
+{% for table_name, table in (nftables_config.tables | default({}, true)).items() %}
+table {{ table.type | default("inet") }} {{ table_name }} {
+{% for name, addresses in (nftables_networks | default({}, true)).items() %}
+  set {{ name }} { type ipv4_addr; flags interval; elements = { {{ addresses | join(', ') }} } }
+{% endfor %}
+{% for name, address in (nftables_hosts | default({}, true)).items() %}
+  set {{ name }} { type ipv4_addr; elements = { {{ address }} } }
+{% endfor %}
+{% for name, group in (nftables_host_groups | default({}, true)).items() %}
+  set {{ name }} { type ipv4_addr; elements = { {% for host in group.hosts | default([], true) %}{{ nftables_hosts[host] }}{% if not loop.last %}, {% endif %}{% endfor %} } }
+{% endfor %}
+{% for service_name, service in (nftables_services | default({}, true)).items() %}
+{% for protocol, ports in (service.protocols | default({}, true)).items() %}
+  set {{ service_name }}_{{ protocol }}_ports { type inet_service; elements = { {{ ports | join(', ') }} } }
+{% endfor %}
+{% endfor %}
+{% for chain_name, chain in (table.chains | default({}, true)).items() %}
+  chain {{ chain_name }} {
+{% if chain.hook is defined %}
+    type {{ chain.type | default("filter") }} hook {{ chain.hook }} priority {% if chain.priority is defined %}{{ chain.priority }}{% elif chain.type | default('filter') == 'nat' and chain.hook == 'prerouting' %}dstnat{% elif chain.type | default('filter') == 'nat' and chain.hook == 'postrouting' %}srcnat{% else %}filter{% endif %};
+{% endif %}
+{% if chain.policy is defined %}
+    policy {{ chain.policy }};
+{% endif %}
+{% if chain.hook == "input" and chain.type | default("filter") != "nat" %}
+{% for rule in nftables_default_input_rules %}
+    {{ rule }}
+{% endfor %}
+{% elif chain.hook == "forward" and chain.type | default("filter") != "nat" %}
+{% for rule in nftables_default_forward_rules %}
+    {{ rule }}
+{% endfor %}
+{% endif %}
+{% for rule in nftables_all_rules if rule.chain | default(chain_name) == chain_name %}
+    {% if rule.source_interface is defined %}iifname {% if rule.source_interface in nftables_interfaces %}{{ nftables_interfaces[rule.source_interface] }}{% else %}{{ rule.source_interface }}{% endif %} {% endif %}{% if rule.destination_interface is defined %}oifname {% if rule.destination_interface in nftables_interfaces %}{{ nftables_interfaces[rule.destination_interface] }}{% else %}{{ rule.destination_interface }}{% endif %} {% endif %}{% if rule.source_network is defined %}ip saddr {{ rule.source_network }} {% endif %}{% if rule.destination_network is defined %}ip daddr {{ rule.destination_network }} {% endif %}{% if rule.source_group is defined %}ip saddr @{{ rule.source_group }} {% endif %}{% if rule.destination_host is defined and rule.action != "dnat" %}ip daddr {{ nftables_hosts[rule.destination_host] }} {% endif %}{% if rule.destination_group is defined %}ip daddr @{{ rule.destination_group }} {% endif %}{% if rule.protocol_raw is defined %}{{ rule.protocol_raw }} {% elif rule.protocol is defined %}{{ rule.protocol }} {% if rule.service is defined %}dport @{{ rule.service }}_{{ rule.protocol }}_ports {% elif rule.ports is defined %}dport { {{ rule.ports | join(', ') }} } {% endif %}{% endif %}{% if rule.ct_state is defined %}ct state {{ rule.ct_state }} {% endif %}{% if rule.action == "dnat" %}dnat ip to {{ nftables_hosts[rule.destination_host] }}{% if rule.destination_port is defined %}:{{ rule.destination_port }}{% endif %}{% else %}{{ rule.action | default("accept") }}{% endif %}{{ '\n' }}{% endfor %}
+{% for rule in chain.rules | default([], true) %}
+{% if rule.raw is defined %}
+    {{ rule.raw }}
+{% endif %}
+{% endfor %}
+  }
+{% endfor %}
+}
+{% endfor %}

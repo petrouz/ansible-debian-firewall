@@ -1,0 +1,17 @@
+extends: relaxed
+rules:
+  braces:
+    max-spaces-inside: 1
+  brackets: disable
+  comments:
+    min-spaces-from-content: 1
+  indentation: disable
+  line-length:
+    max: 160
+  document-start: disable
+  truthy: disable
+  key-duplicates: enable
+  new-line-at-end-of-file: enable
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true

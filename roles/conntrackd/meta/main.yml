@@ -1,0 +1,8 @@
+---
+galaxy_info:
+  namespace: petrouz
+  role_name: conntrackd
+  author: Petrouz
+  description: Firewall Debian 13
+  license: BSD-2-Clause
+  min_ansible_version: '2.15'

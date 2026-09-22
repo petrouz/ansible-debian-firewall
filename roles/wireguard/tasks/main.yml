@@ -1,0 +1,16 @@
+---
+- name: Install WireGuard
+  ansible.builtin.include_tasks: install.yml
+  when: wireguard_enabled
+
+- name: Manage WireGuard keys
+  ansible.builtin.include_tasks: keys.yml
+  when: wireguard_enabled
+
+- name: Configure WireGuard tunnels
+  ansible.builtin.include_tasks: configuration.yml
+  when: wireguard_enabled
+
+- name: Manage WireGuard services
+  ansible.builtin.include_tasks: service.yml
+  when: wireguard_enabled

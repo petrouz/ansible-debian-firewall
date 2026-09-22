@@ -1,0 +1,37 @@
+nftables_input_rules:
+  - chain: input
+    source_interface: lan
+    source_network: 10.20.10.0/24
+    protocol_raw: ip protocol ospf
+    action: accept
+  - chain: input
+    source_interface: lan
+    protocol_raw: ip protocol 112
+    action: accept
+  - chain: input
+    source_interface: lan
+    service: wireguard
+    protocol: udp
+    action: accept
+  - chain: input
+    source_interface: lan
+    protocol: udp
+    ports:
+      - 3780
+    action: accept
+  - chain: input
+    source_interface: wan
+    service: wireguard
+    protocol: udp
+    action: accept
+  - chain: input
+    source_interface: wan
+    source_network: 10.10.10.0/24
+    service: ipsec
+    protocol: udp
+    action: accept
+  - chain: input
+    source_interface: wan
+    source_network: 10.10.10.0/24
+    protocol_raw: ip protocol esp
+    action: accept

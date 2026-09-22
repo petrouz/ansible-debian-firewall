@@ -1,0 +1,102 @@
+---
+- name: Create systemd-networkd directory
+  ansible.builtin.file:
+    path: /etc/systemd/network
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Configure VLAN netdevs
+  ansible.builtin.template:
+    src: vlan.netdev.j2
+    dest: /etc/systemd/network/10-{{ vlan.name }}.netdev
+    owner: root
+    group: root
+    mode: '0644'
+  loop: '{{ network_vlans }}'
+  loop_control:
+    loop_var: vlan
+  notify: Restart systemd-networkd
+
+- name: Configure bond netdevs
+  ansible.builtin.template:
+    src: bond.netdev.j2
+    dest: /etc/systemd/network/10-{{ bond.name }}.netdev
+    owner: root
+    group: root
+    mode: '0644'
+  loop: '{{ network_bonds }}'
+  loop_control:
+    loop_var: bond
+  notify: Restart systemd-networkd
+
+- name: Configure bond members
+  ansible.builtin.template:
+    src: bond.network.j2
+    dest: /etc/systemd/network/20-{{ bond.name }}-{{ bond_interface }}.network
+    owner: root
+    group: root
+    mode: '0644'
+  loop: '{{ network_bonds | subelements("interfaces") }}'
+  loop_control:
+    loop_var: bond_member
+  vars:
+    bond: '{{ bond_member.0 }}'
+    bond_interface: '{{ bond_member.1 }}'
+  notify: Restart systemd-networkd
+
+- name: Configure network interfaces
+  ansible.builtin.template:
+    src: interface.network.j2
+    dest: /etc/systemd/network/10-{{ interface.name }}.network
+    owner: root
+    group: root
+    mode: '0644'
+  loop: '{{ network_interfaces }}'
+  loop_control:
+    loop_var: interface
+  notify: Restart systemd-networkd
+
+- name: Configure static routes
+  ansible.builtin.template:
+    src: routes.network.j2
+    dest: /etc/systemd/network/90-routes.network
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart systemd-networkd
+
+- name: Create sysctl directory
+  ansible.builtin.file:
+    path: /etc/sysctl.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Configure persistent sysctl parameters
+  ansible.builtin.template:
+    src: 99-network.conf.j2
+    dest: /etc/sysctl.d/99-network.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload sysctl parameters
+
+- name: Flush network handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure systemd-networkd is active
+  ansible.builtin.systemd:
+    name: systemd-networkd
+    state: started
+    enabled: true
+
+- name: Wait for network interfaces
+  ansible.builtin.wait_for:
+    path: /sys/class/net/{{ interface.name }}
+    timeout: 30
+  loop: '{{ network_interfaces }}'
+  loop_control:
+    loop_var: interface

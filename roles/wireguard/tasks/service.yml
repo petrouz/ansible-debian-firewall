@@ -1,0 +1,17 @@
+---
+- name: Enable and start WireGuard tunnels (standalone)
+  ansible.builtin.systemd:
+    name: "wg-quick@{{ item.name }}"
+    state: started
+    enabled: true
+  loop: "{{ wireguard_interfaces }}"
+  when:
+    - wireguard_manage_service
+    - not keepalived_enabled | default(false)
+
+- name: Disable WireGuard autostart in HA
+  ansible.builtin.systemd:
+    name: "wg-quick@{{ item.name }}"
+    enabled: false
+  loop: "{{ wireguard_interfaces }}"
+  when: keepalived_enabled | default(false)

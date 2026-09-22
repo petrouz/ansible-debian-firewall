@@ -1,0 +1,30 @@
+---
+nftables_enabled: true
+nftables_config:
+  vars: {}
+  tables: {}
+  path: /etc/nftables.conf
+  service: nftables
+nftables_interfaces:
+  wan: eth0
+  lan: eth1
+nftables_services: {}
+nftables_hosts: {}
+nftables_host_groups: {}
+nftables_networks: {}
+nftables_rules: []
+
+nftables_default_input_rules:
+  - ct state invalid drop
+  - ct state { established, related } accept
+  - iifname lo accept
+  - ip protocol icmp limit rate 10/second burst 20 packets accept
+  - ip protocol icmp drop
+  - ip frag-off & 0x1fff != 0 drop
+  - tcp dport 22 limit rate 10/minute burst 5 packets accept
+  - tcp dport 22 drop
+
+nftables_default_forward_rules:
+  - ct state invalid drop
+  - ct state { established, related } accept
+  - ip frag-off & 0x1fff != 0 drop

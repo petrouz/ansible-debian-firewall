@@ -1,0 +1,13 @@
+---
+- name: Verify network role
+  hosts: all
+  gather_facts: true
+  tasks:
+    - name: Verify network configuration directory
+      ansible.builtin.stat:
+        path: /etc/systemd/network
+      register: network_directory
+    - name: Assert network configuration directory
+      ansible.builtin.assert:
+        that:
+          - network_directory.stat.isdir

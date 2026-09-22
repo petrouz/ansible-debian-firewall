@@ -1,0 +1,40 @@
+nftables_networks:
+  lan:
+    - 10.20.10.0/24
+  vpn:
+    - 10.100.0.0/27
+
+nftables_hosts:
+  web: 10.20.10.7
+  mail: 10.20.10.80
+
+nftables_host_groups:
+  public_web:
+    hosts:
+      - web
+  mail_servers:
+    hosts:
+      - mail
+
+nftables_services:
+  web:
+    protocols:
+      tcp:
+        - 80
+        - 443
+  mail:
+    protocols:
+      tcp:
+        - 25
+        - 465
+        - 587
+        - 993
+  wireguard:
+    protocols:
+      udp:
+        - 51820
+  ipsec:
+    protocols:
+      udp:
+        - 500
+        - 4500

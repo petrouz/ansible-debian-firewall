@@ -1,0 +1,8 @@
+---
+galaxy_info:
+  author: Petrouz
+  description: Debian base services and system logging
+  license: BSD-2-Clause
+  min_ansible_version: '2.15'
+  namespace: debian-firewall
+  role_name: base

@@ -1,0 +1,9 @@
+frr version 10.0
+frr defaults traditional
+hostname {{ inventory_hostname }}
+log syslog informational
+no ipv6 forwarding
+!
+{% for name, config in frr_configs.items() %}
+{{ config }}
+{% endfor %}
