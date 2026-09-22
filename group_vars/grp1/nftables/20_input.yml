@@ -5,6 +5,11 @@ nftables_input_rules:
     protocol_raw: ip protocol ospf
     action: accept
   - chain: input
+    source_interface: wan
+    source_network: 10.10.10.0/24
+    protocol_raw: ip protocol ospf
+    action: accept
+  - chain: input
     source_interface: lan
     protocol_raw: ip protocol 112
     action: accept

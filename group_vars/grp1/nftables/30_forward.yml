@@ -43,3 +43,9 @@ nftables_forward_rules:
     destination_network: 10.20.10.0/24
     source_network: 10.100.0.0/27
     action: accept
+  - chain: forward
+    source_interface: wg0
+    destination_interface: wan
+    source_network: 10.100.0.0/27
+    destination_network: 10.30.10.0/24
+    action: accept

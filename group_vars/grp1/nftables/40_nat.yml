@@ -29,3 +29,8 @@ nftables_nat_rules:
     source_network: 10.100.0.0/27
     destination_interface: wan
     action: masquerade
+  - chain: postrouting
+    source_network: 10.100.0.0/27
+    destination_network: 10.30.10.0/24
+    destination_interface: wan
+    action: masquerade
