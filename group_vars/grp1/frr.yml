@@ -1,1 +1,14 @@
 frr_enabled: true
+frr_router_ids:
+  fw1: 10.10.10.3
+  fw2: 10.10.10.4
+frr_router_id: "{{ frr_router_ids[inventory_hostname] }}"
+frr_daemons:
+  - zebra
+  - ospfd
+frr_configs:
+  ospf: |
+    router ospf
+      ospf router-id {{ frr_router_id }}
+      network 10.10.10.0/24 area 0
+      passive-interface eth1
