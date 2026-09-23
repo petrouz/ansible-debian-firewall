@@ -4,7 +4,7 @@
 
 Production-oriented Ansible roles for building secure, auditable and reproducible Debian 13 and Debian 14 firewalls.
 
-The project provides a complete perimeter firewall foundation based on standard Debian components. It is designed for teams that need transparent infrastructure, controlled changes and operational consistency without a proprietary appliance or opaque management layer.
+ansible-debian-firewall is a collection of Ansible roles for deploying standard Debian firewalls. It covers the base system, network configuration, nftables, VPN, dynamic routing and high availability without replacing Debian with a proprietary appliance.
 
 ## Why this project
 
