@@ -1,8 +1,7 @@
 wireguard_vip_address: 10.10.10.2/24
-wireguard_key_mode: shared
-wireguard_shared_private_key: ''
 wireguard_interfaces:
 - name: wg0
+  private_key: ""
   address: 10.100.0.1/27
   listen_port: 51820
   peers:

@@ -11,4 +11,5 @@ frr_configs:
     router ospf
       ospf router-id {{ frr_router_id }}
       network 10.10.10.0/24 area 0
+      network 10.20.10.0/24 area 0
       passive-interface eth1

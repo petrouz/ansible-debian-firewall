@@ -1,76 +1,92 @@
 ---
-- name: Deploy provided private key
+- name: Deploy provided private keys
   ansible.builtin.copy:
-    content: "{{ item.private_key }}\n"
-    dest: "{{ wireguard_key_directory }}/{{ item.name }}.key"
+    content: "{{ wg_interface.private_key }}\n"
+    dest: "{{ wireguard_key_directory }}/{{ wg_interface.name }}.key"
     owner: root
     group: root
     mode: "0600"
   loop: "{{ wireguard_interfaces }}"
-  when: item.private_key is defined and item.private_key | length > 0
-
-- name: Generate cluster private key on primary
-  ansible.builtin.shell:
-    cmd: "wg genkey > {{ wireguard_key_directory }}/{{ item.name }}.key"
-    creates: "{{ wireguard_key_directory }}/{{ item.name }}.key"
-  loop: "{{ wireguard_interfaces }}"
+  loop_control:
+    loop_var: wg_interface
   when:
-    - item.private_key is not defined or item.private_key | length == 0
-    - inventory_hostname == wireguard_ha_primary
-    - keepalived_enabled | default(false)
+    - wg_interface.private_key is defined
+    - wg_interface.private_key | length > 0
 
-- name: Fetch cluster private key from primary
+- name: Generate shared private keys on primary
+  ansible.builtin.shell:
+    cmd: "wg genkey > {{ wireguard_key_directory }}/{{ wg_interface.name }}.key"
+    creates: "{{ wireguard_key_directory }}/{{ wg_interface.name }}.key"
+  loop: "{{ wireguard_interfaces }}"
+  loop_control:
+    loop_var: wg_interface
+  when:
+    - wg_interface.private_key is not defined or wg_interface.private_key | length == 0
+    - keepalived_enabled | default(false)
+    - inventory_hostname == wireguard_ha_primary
+
+- name: Fetch shared private keys from primary
   ansible.builtin.slurp:
-    src: "{{ wireguard_key_directory }}/{{ item.name }}.key"
+    src: "{{ wireguard_key_directory }}/{{ wg_interface.name }}.key"
   register: wireguard_primary_keys
   loop: "{{ wireguard_interfaces }}"
+  loop_control:
+    loop_var: wg_interface
   when:
-    - item.private_key is not defined or item.private_key | length == 0
-    - inventory_hostname != wireguard_ha_primary
+    - wg_interface.private_key is not defined or wg_interface.private_key | length == 0
     - keepalived_enabled | default(false)
+    - inventory_hostname != wireguard_ha_primary
   delegate_to: "{{ wireguard_ha_primary }}"
-  run_once: false
 
-- name: Deploy cluster private key on secondary
+- name: Deploy shared private keys on secondary
   ansible.builtin.copy:
-    content: "{{ item.content | b64decode }}\n"
-    dest: "{{ wireguard_key_directory }}/{{ item.item.name }}.key"
+    content: "{{ key_result.content | b64decode }}\n"
+    dest: "{{ wireguard_key_directory }}/{{ key_result.wg_interface.name }}.key"
     owner: root
     group: root
     mode: "0600"
-  loop: "{{ wireguard_primary_keys.results }}"
+  loop: "{{ wireguard_primary_keys.results | default([]) }}"
+  loop_control:
+    loop_var: key_result
   when:
-    - item.private_key is not defined or item.private_key | length == 0
     - inventory_hostname != wireguard_ha_primary
     - keepalived_enabled | default(false)
 
-- name: Generate private key locally
+- name: Generate private keys locally
   ansible.builtin.shell:
-    cmd: "wg genkey > {{ wireguard_key_directory }}/{{ item.name }}.key"
-    creates: "{{ wireguard_key_directory }}/{{ item.name }}.key"
+    cmd: "wg genkey > {{ wireguard_key_directory }}/{{ wg_interface.name }}.key"
+    creates: "{{ wireguard_key_directory }}/{{ wg_interface.name }}.key"
   loop: "{{ wireguard_interfaces }}"
+  loop_control:
+    loop_var: wg_interface
   when:
-    - item.private_key is not defined or item.private_key | length == 0
+    - wg_interface.private_key is not defined or wg_interface.private_key | length == 0
     - not keepalived_enabled | default(false)
 
 - name: Compute public keys
   ansible.builtin.shell:
-    cmd: "wg pubkey < {{ wireguard_key_directory }}/{{ item.name }}.key"
+    cmd: "wg pubkey < {{ wireguard_key_directory }}/{{ wg_interface.name }}.key"
   loop: "{{ wireguard_interfaces }}"
+  loop_control:
+    loop_var: wg_interface
   register: wireguard_public_keys
   changed_when: false
 
 - name: Deploy public keys
   ansible.builtin.copy:
-    content: "{{ item.stdout }}\n"
-    dest: "{{ wireguard_key_directory }}/{{ item.item.name }}.pub"
+    content: "{{ public_key.stdout }}\n"
+    dest: "{{ wireguard_key_directory }}/{{ public_key.wg_interface.name }}.pub"
     owner: root
     group: root
     mode: "0644"
   loop: "{{ wireguard_public_keys.results }}"
+  loop_control:
+    loop_var: public_key
 
 - name: Read private keys for tunnel configuration
   ansible.builtin.slurp:
-    src: "{{ wireguard_key_directory }}/{{ item.name }}.key"
+    src: "{{ wireguard_key_directory }}/{{ wg_interface.name }}.key"
   loop: "{{ wireguard_interfaces }}"
+  loop_control:
+    loop_var: wg_interface
   register: wireguard_key_contents
