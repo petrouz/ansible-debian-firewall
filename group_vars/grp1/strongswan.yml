@@ -1,5 +1,5 @@
 strongswan_enabled: true
-strongswan_psk: !vault |
+strongswan_psk_router: !vault |
           $ANSIBLE_VAULT;1.1;AES256
           63376338666165633961343433336336393365336166313265396432383134356631653763353134
           3839326439363736393538333834613739616434643464650a313435666637383230333263653235
@@ -8,7 +8,7 @@ strongswan_psk: !vault |
           36626362386535313036653934646132346535666339663539396533373839366664656431643039
           3032303262313931373137626632666239653337336163666465
 strongswan_connections:
-  peer:
+  router:
     keyexchange: ikev2
     type: tunnel
     auto: start
@@ -19,4 +19,4 @@ strongswan_connections:
     authby: psk
     ike: aes256-sha256-modp2048
     esp: aes256-sha256
-    psk: "{{ strongswan_psk }}"
+    psk: "{{ strongswan_psk_router }}"
