@@ -34,7 +34,6 @@
     enabled: true
   when:
     - strongswan_enabled
-    - strongswan_manage_service
     - not keepalived_enabled | default(false)
 
 - name: Disable strongSwan autostart in HA
@@ -43,5 +42,4 @@
     enabled: false
   when:
     - strongswan_enabled
-    - strongswan_manage_service
     - keepalived_enabled | default(false)

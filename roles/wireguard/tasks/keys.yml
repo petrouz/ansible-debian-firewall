@@ -49,6 +49,7 @@
   loop_control:
     loop_var: key_result
   when:
+    - key_result.content is defined
     - inventory_hostname != wireguard_ha_primary
     - keepalived_enabled | default(false)
 
@@ -71,6 +72,7 @@
     loop_var: wg_interface
   register: wireguard_public_keys
   changed_when: false
+  check_mode: false
 
 - name: Deploy public keys
   ansible.builtin.copy:

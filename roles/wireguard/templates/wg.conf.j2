@@ -1,6 +1,6 @@
 [Interface]
 Address = {{ item.address }}
-PrivateKey = {{ (wireguard_key_contents.results | selectattr("item.name", "equalto", item.name) | first).content | b64decode | trim }}
+PrivateKey = {{ (wireguard_key_contents.results | selectattr("wg_interface.name", "equalto", item.name) | first).content | b64decode | trim }}
 {% if item.listen_port is defined %}ListenPort = {{ item.listen_port }}
 {% endif %}{% for peer in item.peers | default([]) %}
 [Peer]

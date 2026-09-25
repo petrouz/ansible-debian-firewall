@@ -5,6 +5,4 @@
     state: restarted
     enabled: true
   loop: "{{ wireguard_interfaces }}"
-  when:
-    - wireguard_manage_service
-    - not keepalived_enabled | default(false)
+  when: not keepalived_enabled | default(false)

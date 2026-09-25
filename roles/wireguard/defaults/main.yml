@@ -1,7 +1,6 @@
 ---
 wireguard_interfaces: []
 wireguard_enabled: false
-wireguard_manage_service: true
 wireguard_key_directory: /etc/wireguard
 
 # The private key is optional, per tunnel, within wireguard_interfaces.

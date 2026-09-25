@@ -4,6 +4,4 @@
     name: strongswan-starter
     state: restarted
     enabled: true
-  when:
-    - strongswan_manage_service
-    - not keepalived_enabled | default(false)
+  when: not keepalived_enabled | default(false)
