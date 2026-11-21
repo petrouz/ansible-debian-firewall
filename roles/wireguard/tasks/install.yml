@@ -1,7 +1,9 @@
 ---
 - name: Install WireGuard
   ansible.builtin.apt:
-    name: wireguard-tools
+    name:
+      - wireguard-tools
+      - iproute2
     state: present
     update_cache: true
 
