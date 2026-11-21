@@ -4,3 +4,6 @@ frr_daemons:
   - zebra
   - bgpd
 frr_configs: {}
+frr_version: ""
+frr_ipv6_forwarding: false
+frr_log_level: informational

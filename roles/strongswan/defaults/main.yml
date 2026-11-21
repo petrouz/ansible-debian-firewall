@@ -5,5 +5,4 @@ strongswan_packages:
   - libcharon-extra-plugins
 strongswan_connections: {}
 strongswan_enabled: false
-strongswan_ha_interface: "{{ keepalived_ha_interface | default('') }}"
-strongswan_ha_virtual_ip: "{{ keepalived_virtual_ip | default('') }}"
+strongswan_uniqueids: "no"

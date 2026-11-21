@@ -12,11 +12,11 @@
 </header><main class="wiki-layout"><aside class="wiki-sidebar"><p class="wiki-label">FIREWALL WIKI</p><a href="quickstart.html">Quickstart</a><a href="architecture.html">Architecture</a><a class="wiki-current" href="configuration.html">Configuration</a><a href="operations.html">Operations</a></aside><div class="wiki-content"><p class="mono text-sm text-red-600">CONFIGURATION</p><h1 class="mt-3 text-4xl font-bold text-slate-900">Variables by use case</h1><p class="mt-4 text-lg text-slate-700">Change the variables below to describe the firewall. Each example maps to files currently present in this repository.</p><article><h2>Give an interface an address</h2><p>Put node-specific addresses in <code>host_vars/fw1/network.yml</code> and <code>host_vars/fw2/network.yml</code>. The role writes systemd-networkd configuration from these values.</p><pre><code>network_interfaces:
   - name: eth0
     address: 10.10.10.3
-    netmask: 255.255.255.0
+    prefix: 24
     gateway: 10.10.10.1
   - name: eth1
     address: 10.20.10.3
-    netmask: 255.255.255.0</code></pre><p>Change the address, mask and gateway for the target node. Keep the interface names identical on both HA nodes unless the templates and inventory explicitly account for the difference.</p></article><article><h2>Define reusable firewall objects</h2><p>Use <code>group_vars/grp1/nftables/10_objects.yml</code>. Hosts receive names, host groups combine them, and services define protocol and ports.</p><pre><code>nftables_hosts:
+    prefix: 24</code></pre><p>Change the address, prefix and gateway for the target node. Keep the interface names identical on both HA nodes unless the templates and inventory explicitly account for the difference.</p></article><article><h2>Define reusable firewall objects</h2><p>Use <code>group_vars/grp1/nftables/10_objects.yml</code>. Hosts receive names, host groups combine them, and services define protocol and ports.</p><pre><code>nftables_hosts:
   web: 10.20.10.7
 
 nftables_host_groups:

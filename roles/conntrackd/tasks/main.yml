@@ -3,11 +3,26 @@
   when:
     - conntrackd_enabled
   block:
+    - name: Validate conntrackd variables
+      ansible.builtin.assert:
+        that:
+          - conntrackd_ha_interface | length > 0
+          - conntrackd_ha_address | length > 0
+          - conntrackd_multicast_address | length > 0
+        fail_msg: "conntrackd requires an HA interface and address, usually provided by keepalived."
+
     - name: Install conntrackd
       ansible.builtin.apt:
         name: conntrackd
         state: present
         update_cache: true
+
+    - name: Load nf_conntrack module
+      community.general.modprobe:
+        name: nf_conntrack
+        state: present
+        persistent: present
+
     - name: Deploy conntrackd configuration
       ansible.builtin.template:
         src: conntrackd.conf.j2

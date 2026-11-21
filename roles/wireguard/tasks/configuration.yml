@@ -2,9 +2,12 @@
 - name: Deploy WireGuard tunnel configurations
   ansible.builtin.template:
     src: wg.conf.j2
-    dest: "{{ wireguard_key_directory }}/{{ item.name }}.conf"
+    dest: "{{ wireguard_key_directory }}/{{ wg_interface.name }}.conf"
     owner: root
     group: root
     mode: "0600"
   loop: "{{ wireguard_interfaces }}"
+  loop_control:
+    loop_var: wg_interface
+  no_log: true
   notify: Restart WireGuard tunnels

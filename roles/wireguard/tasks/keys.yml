@@ -9,6 +9,7 @@
   loop: "{{ wireguard_interfaces }}"
   loop_control:
     loop_var: wg_interface
+  no_log: true
   when:
     - wg_interface.private_key is defined
     - wg_interface.private_key | length > 0
@@ -22,7 +23,7 @@
     loop_var: wg_interface
   when:
     - wg_interface.private_key is not defined or wg_interface.private_key | length == 0
-    - keepalived_enabled | default(false)
+    - wireguard_ha_enabled | bool
     - inventory_hostname == wireguard_ha_primary
 
 - name: Fetch shared private keys from primary
@@ -32,9 +33,10 @@
   loop: "{{ wireguard_interfaces }}"
   loop_control:
     loop_var: wg_interface
+  no_log: true
   when:
     - wg_interface.private_key is not defined or wg_interface.private_key | length == 0
-    - keepalived_enabled | default(false)
+    - wireguard_ha_enabled | bool
     - inventory_hostname != wireguard_ha_primary
   delegate_to: "{{ wireguard_ha_primary }}"
 
@@ -48,10 +50,11 @@
   loop: "{{ wireguard_primary_keys.results | default([]) }}"
   loop_control:
     loop_var: key_result
+  no_log: true
   when:
     - key_result.content is defined
     - inventory_hostname != wireguard_ha_primary
-    - keepalived_enabled | default(false)
+    - wireguard_ha_enabled | bool
 
 - name: Generate private keys locally
   ansible.builtin.shell:
@@ -62,7 +65,7 @@
     loop_var: wg_interface
   when:
     - wg_interface.private_key is not defined or wg_interface.private_key | length == 0
-    - not keepalived_enabled | default(false)
+    - not wireguard_ha_enabled | bool
 
 - name: Compute public keys
   ansible.builtin.shell:
@@ -92,3 +95,4 @@
   loop_control:
     loop_var: wg_interface
   register: wireguard_key_contents
+  no_log: true

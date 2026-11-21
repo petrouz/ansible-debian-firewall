@@ -13,14 +13,21 @@ nftables_hosts: {}
 nftables_host_groups: {}
 nftables_networks: {}
 nftables_rules: []
+nftables_log_dropped: false
+nftables_log_prefix: nft-drop
+nftables_log_rate: 5/minute
 
 nftables_default_input_rules:
   - ct state invalid drop
   - ct state { established, related } accept
   - iifname lo accept
   - ip protocol icmp limit rate 10/second burst 20 packets accept
-  - ip protocol icmp drop
+  - meta l4proto ipv6-icmp limit rate 10/second burst 20 packets accept
   - ip frag-off & 0x1fff != 0 drop
+
+nftables_default_input_policy_rules:
+  - ip protocol icmp drop
+  - meta l4proto ipv6-icmp drop
   - tcp dport 22 limit rate 10/minute burst 5 packets accept
   - tcp dport 22 drop
 

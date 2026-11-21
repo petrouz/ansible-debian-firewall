@@ -1,0 +1,10 @@
+[Match]
+Name={{ vlan.name }}
+
+[Network]
+{% set prefix = vlan.prefix | default(vlan.netmask | default('255.255.255.0') | netmask_to_prefix) %}
+{% for address in vlan.addresses | default([vlan.address ~ '/' ~ prefix]) %}Address={{ address }}
+{% endfor %}{% if vlan.gateway is defined %}Gateway={{ vlan.gateway }}
+{% endif %}{% if vlan.mtu is defined %}MTU={{ vlan.mtu }}
+{% endif %}{% set dns = vlan.dns | default(network_dns_servers | default([])) %}{% if dns | length > 0 %}DNS={{ dns | join(' ') }}
+{% endif %}

@@ -10,4 +10,6 @@ wireguard_key_directory: /etc/wireguard
 #     - name: wg0
 #       private_key: "PRIVATE_KEY"
 #       address: 10.0.0.1/30
-wireguard_ha_primary: "{{ groups[group_names[0]] | first }}"
+wireguard_ha_enabled: "{{ keepalived_enabled | default(false) }}"
+wireguard_group: "{{ group_names | first | default('all') }}"
+wireguard_ha_primary: "{{ groups[wireguard_group] | sort | first }}"

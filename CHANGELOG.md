@@ -10,6 +10,20 @@ All notable changes to this project are documented here.
 - Added GitHub Actions validation with yamllint, ansible-lint and syntax checks
 - Added separated role-specific variable files
 - Improved DNAT, WireGuard management access and HA firewall rules
+- Fixed the Debian release assertion that rejected Debian 14
+- Fixed nftables rule ordering so user rules can override the default SSH and ICMP policy
+- Fixed `nftables_enabled: false` so the service is stopped and disabled
+- Added nftables rule validation and optional rate-limited drop logging
+- Added `prefix`, `addresses`, `dhcp`, `mtu` and per-interface DNS support to the network role
+- Added VLAN interface addressing and fixed multi-route generation
+- Made `network_dns_servers` explicit in group variables
+- Fixed keepalived `nopreempt`, added VRRP health tracking and a vaulted VRRP password
+- Added conntrackd variable defaults, validation and `nf_conntrack` module loading
+- Added conntrackd resynchronization to the keepalived master notify script
+- Added FRR version detection, integrated config and staticd support
+- Made the WireGuard HA primary selection deterministic and added peer options
+- Added strongSwan optional connection parameters and PSK-only secrets generation
+- Added `.ansible-lint`, fixed yamllint violations and updated the documentation
 
 ## 0.1.0
 

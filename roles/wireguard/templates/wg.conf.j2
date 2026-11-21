@@ -1,11 +1,18 @@
 [Interface]
-Address = {{ item.address }}
-PrivateKey = {{ (wireguard_key_contents.results | selectattr("wg_interface.name", "equalto", item.name) | first).content | b64decode | trim }}
-{% if item.listen_port is defined %}ListenPort = {{ item.listen_port }}
-{% endif %}{% for peer in item.peers | default([]) %}
+Address = {{ wg_interface.addresses | default([wg_interface.address]) | join(', ') }}
+PrivateKey = {{ (wireguard_key_contents.results | selectattr("wg_interface.name", "equalto", wg_interface.name) | first).content | b64decode | trim }}
+{% if wg_interface.listen_port is defined %}ListenPort = {{ wg_interface.listen_port }}
+{% endif %}{% if wg_interface.mtu is defined %}MTU = {{ wg_interface.mtu }}
+{% endif %}{% if wg_interface.table is defined %}Table = {{ wg_interface.table }}
+{% endif %}{% if wg_interface.fwmark is defined %}FwMark = {{ wg_interface.fwmark }}
+{% endif %}{% if wg_interface.save_config is defined %}SaveConfig = {{ wg_interface.save_config }}
+{% endif %}{% if wg_interface.dns is defined %}DNS = {{ wg_interface.dns | join(', ') }}
+{% endif %}{% for peer in wg_interface.peers | default([]) %}
+
 [Peer]
 PublicKey = {{ peer.public_key }}
-AllowedIPs = {{ peer.allowed_ips | join(', ') if peer.allowed_ips is sequence and peer.allowed_ips is not string else peer.allowed_ips }}
+{% if peer.preshared_key is defined %}PresharedKey = {{ peer.preshared_key }}
+{% endif %}AllowedIPs = {{ peer.allowed_ips | join(', ') if peer.allowed_ips is sequence and peer.allowed_ips is not string else peer.allowed_ips }}
 {% if peer.endpoint is defined %}Endpoint = {{ peer.endpoint }}
 {% endif %}{% if peer.persistent_keepalive is defined %}PersistentKeepalive = {{ peer.persistent_keepalive }}
 {% endif %}{% endfor %}

@@ -2,8 +2,12 @@
 Name={{ interface.name }}
 
 [Network]
-Address={{ interface.address }}/{{ interface.prefix | default(24) }}
-{% if interface.gateway is defined %}Gateway={{ interface.gateway }}
+{% set prefix = interface.prefix | default(interface.netmask | default('255.255.255.0') | netmask_to_prefix) %}
+{% if interface.dhcp | default(false) | bool %}DHCP=yes
+{% else %}{% for address in interface.addresses | default([interface.address ~ '/' ~ prefix]) %}Address={{ address }}
+{% endfor %}{% endif %}{% if interface.gateway is defined %}Gateway={{ interface.gateway }}
+{% endif %}{% if interface.mtu is defined %}MTU={{ interface.mtu }}
 {% endif %}{% for vlan in interface.vlans | default([]) %}VLAN={{ vlan }}
 {% endfor %}{% if interface.bond is defined %}Bond={{ interface.bond }}
-{% endif %}DNS={{ interface.dns | default('1.1.1.1') }}
+{% endif %}{% set dns = interface.dns | default(network_dns_servers | default([])) %}{% if dns | length > 0 %}DNS={{ dns | join(' ') }}
+{% endif %}

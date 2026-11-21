@@ -1,18 +1,29 @@
 config setup
-    uniqueids=no
+    uniqueids={{ strongswan_uniqueids }}
 
-{% for name, connection in strongswan_connections.items() %}
+{% for name, connection in strongswan_connections | dictsort %}
 conn {{ name }}
     keyexchange={{ connection.keyexchange | default('ikev2') }}
     type={{ connection.type | default('tunnel') }}
     auto={{ connection.auto | default('start') }}
     left={{ connection.left }}
-    leftsubnet={{ connection.leftsubnet }}
+{% if connection.leftid is defined %}    leftid={{ connection.leftid }}
+{% endif %}    leftsubnet={{ connection.leftsubnet }}
     right={{ connection.right }}
-    rightsubnet={{ connection.rightsubnet }}
+{% if connection.rightid is defined %}    rightid={{ connection.rightid }}
+{% endif %}    rightsubnet={{ connection.rightsubnet }}
     authby={{ connection.authby | default('psk') }}
     ike={{ connection.ike | default('aes256gcm16-prfsha256-ecp256') }}
     esp={{ connection.esp | default('aes256gcm16-ecp256') }}
-    dpdaction={{ connection.dpdaction | default('restart') }}
+{% if connection.ikelifetime is defined %}    ikelifetime={{ connection.ikelifetime }}
+{% endif %}{% if connection.lifetime is defined %}    lifetime={{ connection.lifetime }}
+{% endif %}{% if connection.margintime is defined %}    margintime={{ connection.margintime }}
+{% endif %}{% if connection.mobike is defined %}    mobike={{ connection.mobike }}
+{% endif %}{% if connection.fragmentation is defined %}    fragmentation={{ connection.fragmentation }}
+{% endif %}{% if connection.compress is defined %}    compress={{ connection.compress }}
+{% endif %}    dpdaction={{ connection.dpdaction | default('restart') }}
     dpddelay={{ connection.dpddelay | default('30s') }}
+{% for key, value in connection.extra | default({}) | dictsort %}
+    {{ key }}={{ value }}
+{% endfor %}
 {% endfor %}

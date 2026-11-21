@@ -1,2 +1,13 @@
 ---
 conntrackd_enabled: false
+conntrackd_multicast_address: 239.0.0.1
+conntrackd_multicast_group: 3780
+conntrackd_ha_interface: "{{ keepalived_ha_interface | default('') }}"
+conntrackd_ha_address: "{{ keepalived_ha_address | default('') }}"
+conntrackd_ignore_addresses:
+  - 127.0.0.1
+conntrackd_filter_protocols:
+  - TCP
+  - UDP
+  - SCTP
+  - DCCP

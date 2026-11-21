@@ -1,7 +1,12 @@
 #!/bin/sh
+{% if wireguard_enabled | default(false) %}
 {% for tunnel in wireguard_interfaces | default([]) %}
-systemctl restart wg-quick@{{ tunnel.name }}
+systemctl restart wg-quick@{{ tunnel.name }} || true
 {% endfor %}
+{% endif %}
 {% if strongswan_enabled | default(false) %}
-systemctl start strongswan-starter
+systemctl start strongswan-starter || true
+{% endif %}
+{% if conntrackd_enabled | default(false) %}
+conntrackd -c || true
 {% endif %}

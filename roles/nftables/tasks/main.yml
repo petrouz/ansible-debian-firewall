@@ -1,9 +1,43 @@
 ---
+- name: Validate nftables rule definitions
+  ansible.builtin.assert:
+    that:
+      - item.chain is defined
+    fail_msg: "Every nftables rule must define a chain."
+  loop: "{{ nftables_all_rules }}"
+  vars:
+    nftables_all_rules: >-
+      {{ (nftables_rules | default([]))
+         + (nftables_input_rules | default([]))
+         + (nftables_forward_rules | default([]))
+         + (nftables_nat_rules | default([])) }}
+  loop_control:
+    label: "{{ item | to_json }}"
+
+- name: Validate nftables references
+  ansible.builtin.assert:
+    that:
+      - item.service is not defined or item.service in nftables_services
+      - item.destination_host is not defined or item.destination_host in nftables_hosts
+      - item.source_group is not defined or item.source_group in nftables_host_groups
+      - item.destination_group is not defined or item.destination_group in nftables_host_groups
+    fail_msg: "Rule references an undefined nftables object."
+  loop: "{{ nftables_all_rules }}"
+  vars:
+    nftables_all_rules: >-
+      {{ (nftables_rules | default([]))
+         + (nftables_input_rules | default([]))
+         + (nftables_forward_rules | default([]))
+         + (nftables_nat_rules | default([])) }}
+  loop_control:
+    label: "{{ item | to_json }}"
+
 - name: Install nftables
   ansible.builtin.apt:
     name: nftables
     state: present
     update_cache: true
+  when: nftables_enabled
 
 - name: Deploy nftables configuration
   ansible.builtin.template:
@@ -13,17 +47,25 @@
     group: root
     mode: "0640"
     validate: "nft -c -f %s"
+  when: nftables_enabled
   notify: Reload nftables
 
 - name: Enable nftables
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: "{{ nftables_config.service | default('nftables') }}"
     enabled: true
     state: started
-
-- name: Ensure nftables is started and enabled
-  ansible.builtin.systemd:
-    name: nftables
-    state: started
-    enabled: true
   when: nftables_enabled
+
+- name: Gather service facts
+  ansible.builtin.service_facts:
+  when: not nftables_enabled
+
+- name: Disable nftables
+  ansible.builtin.systemd:
+    name: "{{ nftables_config.service | default('nftables') }}"
+    enabled: false
+    state: stopped
+  when:
+    - not nftables_enabled
+    - (nftables_config.service | default('nftables')) ~ '.service' in ansible_facts.services

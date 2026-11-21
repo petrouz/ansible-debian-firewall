@@ -49,6 +49,18 @@ table {{ table.type | default("inet") }} {{ table_name }} {
     {{ rule.raw }}
 {% endif %}
 {% endfor %}
+{% if chain.hook == "input" and chain.type | default("filter") != "nat" %}
+{% for rule in nftables_default_input_policy_rules %}
+    {{ rule }}
+{% endfor %}
+{% if nftables_log_dropped | bool and chain.policy | default("") == "drop" %}
+    limit rate {{ nftables_log_rate }} log prefix "{{ nftables_log_prefix }}-input: " level info
+{% endif %}
+{% elif chain.hook == "forward" and chain.type | default("filter") != "nat" %}
+{% if nftables_log_dropped | bool and chain.policy | default("") == "drop" %}
+    limit rate {{ nftables_log_rate }} log prefix "{{ nftables_log_prefix }}-forward: " level info
+{% endif %}
+{% endif %}
   }
 {% endfor %}
 }

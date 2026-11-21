@@ -3,3 +3,7 @@ bgpd={{ 'yes' if 'bgpd' in frr_daemons else 'no' }}
 ospfd={{ 'yes' if 'ospfd' in frr_daemons else 'no' }}
 ospf6d={{ 'yes' if 'ospf6d' in frr_daemons else 'no' }}
 bfdd={{ 'yes' if 'bfdd' in frr_daemons else 'no' }}
+staticd={{ 'yes' if 'staticd' in frr_daemons else 'no' }}
+watchfrr_enable=yes
+vtysh_enable=yes
+frr_profile=traditional

@@ -1,8 +1,11 @@
-{% for route in network_routes %}[Match]
-Name={{ route.interface }}
+[Match]
+Name={{ route_interface }}
 
+{% for route in routes %}
 [Route]
 Destination={{ route.destination }}
-Gateway={{ route.gateway }}
-
+{% if route.gateway is defined %}Gateway={{ route.gateway }}
+{% endif %}{% if route.metric is defined %}Metric={{ route.metric }}
+{% endif %}{% if route.table is defined %}Table={{ route.table }}
+{% endif %}
 {% endfor %}

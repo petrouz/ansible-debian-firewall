@@ -1,6 +1,19 @@
 ---
 - name: Configure strongSwan
   block:
+    - name: Validate strongSwan connections
+      ansible.builtin.assert:
+        that:
+          - item.value.left is defined
+          - item.value.right is defined
+          - item.value.leftsubnet is defined
+          - item.value.rightsubnet is defined
+          - item.value.authby | default('psk') != 'psk' or item.value.psk is defined
+        fail_msg: "Each strongSwan connection needs left, right, subnets and a PSK when authby is psk."
+      loop: "{{ strongswan_connections | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+
     - name: Install strongSwan
       ansible.builtin.apt:
         name: "{{ strongswan_packages }}"
@@ -15,6 +28,7 @@
         group: root
         mode: "0600"
       when: strongswan_connections | length > 0
+      no_log: true
       notify: Restart strongSwan
 
     - name: Deploy strongSwan configuration

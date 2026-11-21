@@ -1,9 +1,10 @@
-frr version 10.0
+frr version {{ frr_effective_version }}
 frr defaults traditional
 hostname {{ inventory_hostname }}
-log syslog informational
-no ipv6 forwarding
-!
-{% for name, config in frr_configs.items() %}
+log syslog {{ frr_log_level }}
+{% if frr_ipv6_forwarding | bool %}ipv6 forwarding
+{% else %}no ipv6 forwarding
+{% endif %}!
+{% for name, config in frr_configs | dictsort %}
 {{ config }}
 {% endfor %}

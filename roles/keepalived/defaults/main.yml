@@ -2,3 +2,10 @@
 keepalived_enabled: false
 keepalived_state: BACKUP
 keepalived_nopreempt: true
+keepalived_virtual_router_id: 51
+keepalived_advert_int: 1
+keepalived_password: ""
+keepalived_virtual_ipaddresses: []
+keepalived_track_interfaces: []
+keepalived_track_scripts: []
+keepalived_preempt_delay: 0

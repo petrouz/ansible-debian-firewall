@@ -5,4 +5,8 @@ Kind=bond
 [Bond]
 Mode={{ bond.mode | default('802.3ad') }}
 {% if bond.transmit_hash_policy is defined %}TransmitHashPolicy={{ bond.transmit_hash_policy }}
+{% endif %}{% if bond.lacp_transmit_rate is defined %}LACPTransmitRate={{ bond.lacp_transmit_rate }}
+{% endif %}{% if bond.mii_monitor_sec is defined %}MIIMonitorSec={{ bond.mii_monitor_sec }}
+{% endif %}{% if bond.min_links is defined %}MinLinks={{ bond.min_links }}
+{% endif %}{% if bond.primary_reselect is defined %}PrimaryReselectPolicy={{ bond.primary_reselect }}
 {% endif %}

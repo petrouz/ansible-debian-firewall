@@ -1,24 +1,48 @@
-  global_defs {
+global_defs {
     router_id {{ keepalived_node_id }}
     script_user root
     enable_script_security
-  }
+}
 
-  vrrp_instance VI_FIREWALL {
+{% for script in keepalived_track_scripts %}
+vrrp_script {{ script.name }} {
+    script "{{ script.script }}"
+    interval {{ script.interval | default(2) }}
+    weight {{ script.weight | default(-10) }}
+    fall {{ script.fall | default(3) }}
+    rise {{ script.rise | default(2) }}
+{% if script.timeout is defined %}    timeout {{ script.timeout }}
+{% endif %}}
+{% endfor %}
+vrrp_instance VI_FIREWALL {
     state {{ keepalived_state }}
     interface {{ keepalived_ha_interface }}
-    virtual_router_id 51
+    virtual_router_id {{ keepalived_virtual_router_id }}
     priority {{ keepalived_priority }}
-    advert_int 1
-
+    advert_int {{ keepalived_advert_int }}
+{% if keepalived_nopreempt | bool %}    nopreempt
+{% endif %}{% if keepalived_preempt_delay | int > 0 %}    preempt_delay {{ keepalived_preempt_delay }}
+{% endif %}
     unicast_src_ip {{ keepalived_ha_address }}
     unicast_peer {
-      {{ keepalived_peer_ha_address }}
+        {{ keepalived_peer_ha_address }}
     }
-
+{% if keepalived_track_interfaces | length > 0 %}
+    track_interface {
+{% for iface in keepalived_track_interfaces %}
+        {{ iface }}
+{% endfor %}
+    }
+{% endif %}{% if keepalived_track_scripts | length > 0 %}
+    track_script {
+{% for script in keepalived_track_scripts %}
+        {{ script.name }}
+{% endfor %}
+    }
+{% endif %}
     authentication {
-      auth_type PASS
-      auth_pass {{ keepalived_password }}
+        auth_type PASS
+        auth_pass {{ keepalived_password }}
     }
 
     notify_master "/usr/local/sbin/keepalived-master"
@@ -28,7 +52,7 @@
 
     virtual_ipaddress {
 {% for vip in keepalived_virtual_ipaddresses %}
-      {{ vip.address }}/{{ vip.prefix }} dev {{ vip.interface }}
+        {{ vip.address }}/{{ vip.prefix }} dev {{ vip.interface }}
 {% endfor %}
     }
-  }
+}

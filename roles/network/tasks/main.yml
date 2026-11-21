@@ -7,6 +7,37 @@
     group: root
     mode: '0755'
 
+- name: Validate network interface definitions
+  ansible.builtin.assert:
+    that:
+      - interface.name is defined
+      - interface.address is defined or interface.dhcp | default(false) | bool
+    fail_msg: "Each network interface needs a name and either an address or dhcp: true."
+  loop: "{{ network_interfaces }}"
+  loop_control:
+    loop_var: interface
+    label: "{{ interface.name | default('unnamed') }}"
+
+- name: Validate network VLAN definitions
+  ansible.builtin.assert:
+    that:
+      - vlan.name is defined
+      - vlan.id is defined
+  loop: "{{ network_vlans }}"
+  loop_control:
+    loop_var: vlan
+    label: "{{ vlan.name | default('unnamed') }}"
+
+- name: Validate network route definitions
+  ansible.builtin.assert:
+    that:
+      - route.interface is defined
+      - route.destination is defined
+  loop: "{{ network_routes }}"
+  loop_control:
+    loop_var: route
+    label: "{{ route.destination | default('unnamed') }}"
+
 - name: Configure VLAN netdevs
   ansible.builtin.template:
     src: vlan.netdev.j2
@@ -58,13 +89,59 @@
     loop_var: interface
   notify: Restart systemd-networkd
 
-- name: Configure static routes
+- name: Configure VLAN interfaces
   ansible.builtin.template:
-    src: routes.network.j2
-    dest: /etc/systemd/network/90-routes.network
+    src: vlan.network.j2
+    dest: /etc/systemd/network/10-{{ vlan.name }}.network
     owner: root
     group: root
     mode: '0644'
+  loop: '{{ network_vlans }}'
+  loop_control:
+    loop_var: vlan
+  when: vlan.address is defined
+  notify: Restart systemd-networkd
+
+- name: Remove unaddressed VLAN interfaces
+  ansible.builtin.file:
+    path: /etc/systemd/network/10-{{ vlan.name }}.network
+    state: absent
+  loop: '{{ network_vlans }}'
+  loop_control:
+    loop_var: vlan
+  when: vlan.address is not defined
+  notify: Restart systemd-networkd
+
+- name: Configure static routes
+  ansible.builtin.template:
+    src: routes.network.j2
+    dest: /etc/systemd/network/90-routes-{{ route_interface }}.network
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ network_routes | map(attribute='interface') | unique | list }}"
+  loop_control:
+    loop_var: route_interface
+  vars:
+    routes: "{{ network_routes | selectattr('interface', 'equalto', route_interface) | list }}"
+  notify: Restart systemd-networkd
+
+- name: Find managed static route files
+  ansible.builtin.find:
+    paths: /etc/systemd/network
+    patterns: "90-routes*.network"
+  register: network_route_files
+
+- name: Remove obsolete static route files
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ network_route_files.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  vars:
+    network_route_filenames: "{{ network_routes | map(attribute='interface') | unique | map('regex_replace', '^(.*)$', '90-routes-\\1.network') | list }}"
+  when: item.path | basename not in network_route_filenames
   notify: Restart systemd-networkd
 
 - name: Create sysctl directory

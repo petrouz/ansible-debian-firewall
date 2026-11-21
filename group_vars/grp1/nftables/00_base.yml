@@ -1,4 +1,6 @@
 nftables_config:
+  path: /etc/nftables.conf
+  service: nftables
   vars: {}
   tables:
     firewall:

@@ -2,11 +2,30 @@
 - name: Configure FRR
   when: frr_enabled
   block:
+    - name: Validate FRR configuration
+      ansible.builtin.assert:
+        that:
+          - frr_daemons | length > 0
+          - "'zebra' in frr_daemons"
+        fail_msg: "FRR requires the zebra daemon."
+
     - name: Install FRR
       ansible.builtin.apt:
         name: frr
         state: present
         update_cache: true
+    - name: Detect FRR version
+      ansible.builtin.command:
+        cmd: "dpkg-query -W -f='${Version}' frr"
+      register: frr_version_output
+      changed_when: false
+      check_mode: false
+      when: frr_version | length == 0
+    - name: Set FRR version
+      ansible.builtin.set_fact:
+        frr_effective_version: >-
+          {{ frr_version if frr_version | length > 0
+             else (frr_version_output.stdout | regex_replace('^(?:[0-9]+:)?([0-9]+\\.[0-9]+).*$', '\\1') | trim) }}
     - name: Deploy FRR daemons
       ansible.builtin.template:
         src: daemons.j2

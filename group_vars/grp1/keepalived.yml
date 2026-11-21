@@ -5,10 +5,13 @@ keepalived_virtual_ipaddresses:
 - address: 10.20.10.2
   prefix: 24
   interface: eth1
-keepalived_password: ha
+keepalived_password: "{{ vault_keepalived_password }}"
 keepalived_ha_interface: eth1
-keepalived_virtual_ip: 10.20.10.2
-keepalived_virtual_ip_prefix: 24
-keepalived_virtual_ipaddress: '{{ keepalived_virtual_ip }}/{{ keepalived_virtual_ip_prefix
-  }} dev {{ keepalived_ha_interface }}'
 keepalived_enabled: true
+vault_keepalived_password: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          39373335366336323663663562366163313139616565666235633764636137313461356535356163
+          6237623664386630633763633634353863356132613031620a643136623535646265303339353635
+          39303533306665646665633164373636396464666331393836373036636332643966373663346232
+          3465303261366666370a323732333263303231616533353761393739303230303564363939666332
+          6363

@@ -1,9 +1,11 @@
 ---
-- name: Assert Debian version
+- name: Assert supported Debian release
   ansible.builtin.assert:
     that:
       - ansible_facts.os_family == "Debian"
-      - ansible_facts.distribution_major_version | int <= 13
+      - ansible_facts.distribution_major_version | int >= 13
+      - ansible_facts.distribution_major_version | int <= 14
+    fail_msg: "This role supports Debian 13 and Debian 14 only."
 
 - name: Install base packages
   ansible.builtin.apt:
@@ -71,6 +73,14 @@
     name: snmpd
     state: present
   when: base_snmpd_enabled
+
+- name: Create chrony sources directory
+  ansible.builtin.file:
+    path: /etc/chrony/sources.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
 
 - name: Configure chrony sources
   ansible.builtin.template:

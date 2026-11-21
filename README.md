@@ -27,9 +27,9 @@ The firewall is defined as code and deployed with standard Ansible. Network conf
 
 | Role | Responsibility |
 | --- | --- |
-| `base` | Chrony, rsyslog and common Debian services |
-| `network` | Interfaces, VLANs, bridges, routes, sysctl and systemd-networkd |
-| `nftables` | Stateful firewall policy, NAT, logging and aliases |
+| `base` | Chrony, rsyslog, SSH hardening, locale, unattended upgrades and SNMP |
+| `network` | Interfaces, VLANs, bonds, routes, DNS and sysctl with systemd-networkd |
+| `nftables` | Stateful firewall policy, NAT, optional drop logging and aliases |
 | `wireguard` | WireGuard interfaces, peers and HA-aware configuration |
 | `strongswan` | IPsec tunnels and authentication configuration |
 | `frr` | OSPF, BGP and dynamic routing services |
@@ -48,7 +48,7 @@ The firewall is defined as code and deployed with standard Ansible. Network conf
 Clone the repository, review the inventory and adapt the variables to your environment.
 
 ```
-git clone git@github.com:petrouz/ansible-debian-firewall.git
+git clone git@github.com:petrouz/muros.git
 cd ansible-debian-firewall
 ansible-galaxy collection install -r requirements.yml
 ansible-playbook -i inventory.yml site.yml
@@ -62,6 +62,36 @@ The recommended workflow is to validate changes in a pre-production environment,
 
 Firewall policy should be treated as production code. Changes should be peer reviewed, tested against expected traffic and documented in the changelog.
 
+## Configuration notes
+
+- `nftables` renders a complete ruleset and starts with `flush ruleset`; do not share the host with another nftables manager.
+- Input and forward chains receive the protective rules first, then user rules, then the final policy rules. The SSH rate limit and ICMP drops are applied last so explicit user rules can override them.
+- `nftables_log_dropped: true` adds a rate-limited log line before the drop policy.
+- `nftables_enabled: false` stops and disables the service instead of leaving it running.
+- `network_interfaces` accept either `prefix` or `netmask`, an optional `addresses` list, `dhcp: true`, `mtu`, `dns` and a `vlans` list.
+- `network_dns_servers` sets the default resolver for interfaces that do not define `dns`.
+- `frr_version` is detected from the installed package unless set explicitly.
+- `keepalived_track_interfaces` and `keepalived_track_scripts` add VRRP health tracking.
+- `strongswan_connections` accepts optional `leftid`, `rightid`, `ikelifetime`, `lifetime`, `mobike`, `fragmentation`, `compress` and an `extra` mapping.
+- WireGuard peers accept `preshared_key`, `endpoint` and `persistent_keepalive`.
+
+## Validation
+
+```bash
+yamllint .
+ansible-lint
+ansible-playbook -i inventory.yml site.yml --syntax-check
+molecule test -s default
+```
+
+Molecule scenarios are available for the `base`, `network`, `nftables`, `strongswan` and `wireguard` roles.
+
+## High availability notes
+
+In HA mode, WireGuard and strongSwan services are disabled at boot and started by the keepalived notify scripts. Configuration changes made by Ansible are applied on the next failover or manual service restart; schedule them during a maintenance window.
+
+`conntrackd` reuses `keepalived_ha_interface` and `keepalived_ha_address` unless `conntrackd_ha_interface` and `conntrackd_ha_address` are set explicitly.
+
 ## Repository layout
 
 ```
@@ -70,12 +100,14 @@ inventory.yml         Example inventory
 group_vars/           Shared variables
 host_vars/            Host-specific variables
 roles/                Firewall automation roles
-docs/                 GitHub Pages landing page
+website/              GitHub Pages landing page and documentation
 ```
 
 ## Security notes
 
 This project is infrastructure automation, not a security certification. Review every default, restrict management access, protect secrets with Ansible Vault or an external secret manager and test the resulting policy before production use.
+
+The repository ignores `.vault_pass`. Keep the Vault password outside the repository and provide it to CI through a secret. Sensitive values are stored inline with `!vault`.
 
 ## License
 
@@ -83,6 +115,6 @@ BSD 2-Clause License. See [LICENSE](LICENSE).
 
 ## Links
 
-- [Issues](https://github.com/petrouz/ansible-debian-firewall/issues)
+- [Issues](https://github.com/petrouz/muros/issues)
 - [Docs and configuration](https://petrouz.github.io/ansible-debian-firewall/docs/configuration.html)
 - [Changelog](CHANGELOG.md)

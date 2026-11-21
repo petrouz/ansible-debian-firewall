@@ -3,6 +3,19 @@
   when:
     - keepalived_enabled
   block:
+    - name: Validate keepalived variables
+      ansible.builtin.assert:
+        that:
+          - keepalived_node_id is defined
+          - keepalived_ha_interface is defined
+          - keepalived_ha_address is defined
+          - keepalived_peer_ha_address is defined
+          - keepalived_priority is defined
+          - keepalived_virtual_ipaddresses | length > 0
+          - keepalived_password | length > 0
+          - keepalived_password | length <= 8
+        fail_msg: "keepalived requires node_id, HA addresses, VIPs and an 8-character VRRP password."
+
     - name: Install keepalived
       ansible.builtin.apt:
         name: keepalived
@@ -33,7 +46,7 @@
         group: root
         mode: "0600"
         validate: keepalived --config-test --use-file %s
-      notify: Restart keepalived
+      notify: Reload keepalived
 
 - name: Ensure keepalived is started and enabled
   ansible.builtin.systemd:

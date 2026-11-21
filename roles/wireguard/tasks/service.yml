@@ -5,11 +5,11 @@
     state: started
     enabled: true
   loop: "{{ wireguard_interfaces }}"
-  when: not keepalived_enabled | default(false)
+  when: not wireguard_ha_enabled | bool
 
 - name: Disable WireGuard autostart in HA
   ansible.builtin.systemd:
     name: "wg-quick@{{ item.name }}"
     enabled: false
   loop: "{{ wireguard_interfaces }}"
-  when: keepalived_enabled | default(false)
+  when: wireguard_ha_enabled | bool
