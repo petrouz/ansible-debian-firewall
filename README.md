@@ -48,7 +48,7 @@ The firewall is defined as code and deployed with standard Ansible. Network conf
 Clone the repository, review the inventory and adapt the variables to your environment.
 
 ```
-git clone git@github.com:petrouz/muros.git
+git clone git@github.com:petrouz/ansible-debian-firewall.git
 cd ansible-debian-firewall
 ansible-galaxy collection install -r requirements.yml
 ansible-playbook -i inventory.yml site.yml
@@ -115,6 +115,6 @@ BSD 2-Clause License. See [LICENSE](LICENSE).
 
 ## Links
 
-- [Issues](https://github.com/petrouz/muros/issues)
+- [Issues](https://github.com/petrouz/ansible-debian-firewall/issues)
 - [Docs and configuration](https://petrouz.github.io/ansible-debian-firewall/docs/configuration.html)
 - [Changelog](CHANGELOG.md)
