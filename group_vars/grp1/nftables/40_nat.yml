@@ -11,4 +11,4 @@ nftables_nat_rules:
       - source_network: lan
       - source_network: vpn
       - source_network: vpn
-        destination_network: remote_site
+        destination_network: 10.30.10.0/24
