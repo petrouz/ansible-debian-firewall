@@ -1,57 +1,27 @@
 nftables_forward_rules:
-  - chain: forward
-    source_network: 10.30.1.0/24
-    destination_network: 10.30.2.0/24
-    action: accept
-  - chain: forward
-    source_network: 10.30.2.0/24
-    destination_network: 10.30.1.0/24
-    action: accept
-  - chain: forward
-    source_interface: lan
-    destination_interface: wan
-    source_network: 10.20.10.0/24
-    action: accept
-  - chain: forward
-    source_interface: wan
-    destination_interface: lan
-    destination_group: public_web
-    service: web
-    protocol: tcp
-    action: accept
-  - chain: forward
-    source_interface: wan
-    destination_interface: lan
-    destination_group: mail_servers
-    service: mail
-    protocol: tcp
-    action: accept
-  - chain: forward
-    source_interface: wg0
-    destination_interface: lan
-    source_network: 10.100.0.0/27
-    action: accept
-  - chain: forward
-    source_interface: wg0
-    destination_interface: wan
-    source_network: 10.100.0.0/27
-    destination_network: 10.10.10.0/24
-    action: accept
-  - chain: forward
-    source_interface: wg0
-    destination_interface: lan
-    destination_network: 10.20.10.0/24
-    source_network: 10.100.0.0/27
-    action: accept
-  - chain: forward
-    source_interface: wg0
-    destination_interface: wan
-    source_network: 10.100.0.0/27
-    destination_network: 10.30.10.0/24
-    action: accept
-  - chain: forward
-    source_interface: wan
-    destination_interface: lan
-    source_network: 10.30.10.0/24
-    destination_network: 10.20.10.0/24
-    action: accept
+  - source_network: site_a
+    destination_network: site_b
+  - source_network: site_b
+    destination_network: site_a
+  - from: lan
+    to: wan
+    source_network: lan
+  - from: wan
+    to: lan
+    rules:
+      - destination_group: public_web
+        service: web
+      - destination_group: mail_servers
+        service: mail
+  - from: wg0
+    source_network: vpn
+    rules:
+      - to: lan
+      - to: wan
+        destination_network: mgmt
+      - to: wan
+        destination_network: remote_site
+  - from: wan
+    to: lan
+    source_network: remote_site
+    destination_network: lan

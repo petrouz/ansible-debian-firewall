@@ -16,7 +16,11 @@
     gateway: 10.10.10.1
   - name: eth1
     address: 10.20.10.3
-    prefix: 24</code></pre><p>Change the address, prefix and gateway for the target node. Keep the interface names identical on both HA nodes unless the templates and inventory explicitly account for the difference.</p></article><article><h2>Define reusable firewall objects</h2><p>Use <code>group_vars/grp1/nftables/10_objects.yml</code>. Hosts receive names, host groups combine them, and services define protocol and ports.</p><pre><code>nftables_hosts:
+    prefix: 24</code></pre><p>Change the address, prefix and gateway for the target node. Keep the interface names identical on both HA nodes unless the templates and inventory explicitly account for the difference.</p></article><article><h2>Define reusable firewall objects</h2><p>Use <code>group_vars/grp1/nftables/10_objects.yml</code>. Hosts receive names, host groups combine them, and services define protocol and ports.</p><pre><code>nftables_networks:
+  lan: [10.20.10.0/24]
+  mgmt: [10.10.10.0/24]
+
+nftables_hosts:
   web: 10.20.10.7
 
 nftables_host_groups:
@@ -27,34 +31,35 @@ nftables_host_groups:
 nftables_services:
   web:
     protocols:
-      tcp: [80, 443]</code></pre><p>The name <code>public_web</code> can then be used by a forward rule. Do not put an IP directly in every rule when the same destination is reused.</p></article><article><h2>Publish a service</h2><p>Publishing requires two files. <code>40_nat.yml</code> translates the public packet. <code>30_forward.yml</code> authorizes the translated packet.</p><pre><code>nftables_nat_rules:
-  - chain: prerouting
-    source_interface: wan
-    protocol: tcp
-    ports: [443]
-    destination_host: web
-    destination_port: 443
-    action: dnat
-
-nftables_forward_rules:
-  - chain: forward
-    source_interface: wan
-    destination_interface: lan
-    destination_group: public_web
+      tcp: [80, 443]</code></pre><p>These names can then be used by a rule: <code>source_network: lan</code>, <code>destination_group: public_web</code> or <code>service: web</code>. Do not repeat an IP in every rule when the same object is reused.</p></article><article><h2>Declare filtering rules</h2><p>Rules live in <code>20_input.yml</code> and <code>30_forward.yml</code>. The chain is deduced from the file and <code>accept</code> is the default action, so a rule only describes its match. Use <code>from</code> and <code>to</code> for interfaces, and a <code>rules</code> block to share a match between several rules.</p><pre><code>nftables_input_rules:
+  - from: lan
+    rules:
+      - raw: ip protocol ospf
+      - service: wireguard
+      - protocol: udp
+        ports: [3780]
+  - from: wan
+    source_network: mgmt
+    rules:
+      - service: ipsec
+      - raw: ip protocol esp</code></pre><p>Network, host and host group names are resolved from <code>10_objects.yml</code>. Add <code>action: drop</code> or <code>action: reject</code> to filter; omit it to accept.</p></article><article><h2>Publish a service</h2><p>Publishing requires two files. <code>dnat_to</code> expands every port of the service to the same port on the host. <code>40_nat.yml</code> translates the public packet. <code>30_forward.yml</code> authorizes the translated packet.</p><pre><code>nftables_nat_rules:
+  - from: wan
     service: web
-    protocol: tcp
-    action: accept</code></pre><p>Adding DNAT without the forward rule does not publish the service. Adding the forward rule without DNAT accepts a packet that still has no backend destination.</p></article><article><h2>Allow outbound NAT</h2><p>Masquerade belongs in <code>40_nat.yml</code>; forwarding permission belongs in <code>30_forward.yml</code>.</p><pre><code>nftables_nat_rules:
-  - chain: postrouting
-    source_network: 10.20.10.0/24
-    destination_interface: wan
-    action: masquerade
+    dnat_to: web
 
 nftables_forward_rules:
-  - chain: forward
-    source_interface: lan
-    destination_interface: wan
-    source_network: 10.20.10.0/24
-    action: accept</code></pre></article><article><h2>Add a WireGuard peer</h2><p>Peers are defined in <code>group_vars/grp1/wireguard.yml</code>. Use one unique address per peer and restrict <code>allowed_ips</code> to that peer.</p><pre><code>wireguard_interfaces:
+  - from: wan
+    to: lan
+    destination_group: public_web
+    service: web</code></pre><p>Adding DNAT without the forward rule does not publish the service. Adding the forward rule without DNAT accepts a packet that still has no backend destination.</p></article><article><h2>Allow outbound NAT</h2><p>Masquerade belongs in <code>40_nat.yml</code>; forwarding permission belongs in <code>30_forward.yml</code>.</p><pre><code>nftables_nat_rules:
+  - to: wan
+    masquerade: true
+    source_network: lan
+
+nftables_forward_rules:
+  - from: lan
+    to: wan
+    source_network: lan</code></pre></article><article><h2>Add a WireGuard peer</h2><p>Peers are defined in <code>group_vars/grp1/wireguard.yml</code>. Use one unique address per peer and restrict <code>allowed_ips</code> to that peer.</p><pre><code>wireguard_interfaces:
   - name: wg0
     address: 10.100.0.1/27
     listen_port: 51820

@@ -1,11 +1,24 @@
 #!/usr/sbin/nft -f
 flush ruleset
-{% set nftables_all_rules =
-  (nftables_rules | default([], true))
-  + (nftables_input_rules | default([], true))
-  + (nftables_forward_rules | default([], true))
-  + (nftables_nat_rules | default([], true))
-%}
+{% set input_rules = nftables_input_rules | default([], true) | nftables_expand('input', nftables_services) %}
+{% set forward_rules = nftables_forward_rules | default([], true) | nftables_expand('forward', nftables_services) %}
+{% set nat_rules = nftables_nat_rules | default([], true) | nftables_expand('nat', nftables_services) %}
+{% set generic_rules = nftables_rules | default([], true) | nftables_expand('generic', nftables_services) %}
+{% set nftables_all_rules = generic_rules + input_rules + forward_rules + nat_rules %}
+{%- macro ifname(value) -%}{{ nftables_interfaces[value] if value in nftables_interfaces else value }}{%- endmacro -%}
+{%- macro network(value) -%}{{ ('@' ~ value) if value in nftables_networks else value }}{%- endmacro -%}
+{%- macro match(rule) -%}
+{%- if rule.source_interface is defined %}iifname {{ ifname(rule.source_interface) }} {% endif -%}
+{%- if rule.destination_interface is defined %}oifname {{ ifname(rule.destination_interface) }} {% endif -%}
+{%- if rule.source_network is defined %}ip saddr {{ network(rule.source_network) }} {% endif -%}
+{%- if rule.destination_network is defined %}ip daddr {{ network(rule.destination_network) }} {% endif -%}
+{%- if rule.source_group is defined %}ip saddr @{{ rule.source_group }} {% endif -%}
+{%- if rule.destination_host is defined and rule.action != 'dnat' %}ip daddr {{ nftables_hosts[rule.destination_host] }} {% endif -%}
+{%- if rule.destination_group is defined %}ip daddr @{{ rule.destination_group }} {% endif -%}
+{%- if rule.protocol_raw is defined %}{{ rule.protocol_raw }} {% elif rule.protocol is defined %}{{ rule.protocol }} {% if rule.action == 'dnat' and rule.source_port is defined %}dport {{ rule.source_port }} {% elif rule.service is defined %}dport @{{ rule.service }}_{{ rule.protocol }}_ports {% elif rule.ports is defined %}dport { {{ rule.ports | join(', ') }} } {% endif %}{% endif -%}
+{%- if rule.ct_state is defined %}ct state {{ rule.ct_state }} {% endif -%}
+{%- endmacro -%}
+{%- macro action(rule) -%}{% if rule.action == 'dnat' %}dnat ip to {{ nftables_hosts[rule.dnat_to] }}{% if rule.destination_port is defined %}:{{ rule.destination_port }}{% endif %}{% else %}{{ rule.action }}{% endif %}{%- endmacro -%}
 {% for name, value in (nftables_config.vars | default({}, true)).items() %}
 define {{ name }} = {{ value }}
 {% endfor %}
@@ -43,7 +56,8 @@ table {{ table.type | default("inet") }} {{ table_name }} {
 {% endfor %}
 {% endif %}
 {% for rule in nftables_all_rules if rule.chain | default(chain_name) == chain_name %}
-    {% if rule.source_interface is defined %}iifname {% if rule.source_interface in nftables_interfaces %}{{ nftables_interfaces[rule.source_interface] }}{% else %}{{ rule.source_interface }}{% endif %} {% endif %}{% if rule.destination_interface is defined %}oifname {% if rule.destination_interface in nftables_interfaces %}{{ nftables_interfaces[rule.destination_interface] }}{% else %}{{ rule.destination_interface }}{% endif %} {% endif %}{% if rule.source_network is defined %}ip saddr {{ rule.source_network }} {% endif %}{% if rule.destination_network is defined %}ip daddr {{ rule.destination_network }} {% endif %}{% if rule.source_group is defined %}ip saddr @{{ rule.source_group }} {% endif %}{% if rule.destination_host is defined and rule.action != "dnat" %}ip daddr {{ nftables_hosts[rule.destination_host] }} {% endif %}{% if rule.destination_group is defined %}ip daddr @{{ rule.destination_group }} {% endif %}{% if rule.protocol_raw is defined %}{{ rule.protocol_raw }} {% elif rule.protocol is defined %}{{ rule.protocol }} {% if rule.service is defined %}dport @{{ rule.service }}_{{ rule.protocol }}_ports {% elif rule.ports is defined %}dport { {{ rule.ports | join(', ') }} } {% endif %}{% endif %}{% if rule.ct_state is defined %}ct state {{ rule.ct_state }} {% endif %}{% if rule.action == "dnat" %}dnat ip to {{ nftables_hosts[rule.destination_host] }}{% if rule.destination_port is defined %}:{{ rule.destination_port }}{% endif %}{% else %}{{ rule.action | default("accept") }}{% endif %}{{ '\n' }}{% endfor %}
+    {{ match(rule) }}{{ action(rule) }}
+{% endfor %}
 {% for rule in chain.rules | default([], true) %}
 {% if rule.raw is defined %}
     {{ rule.raw }}

@@ -1,34 +1,22 @@
 ---
-- name: Validate nftables rule definitions
-  ansible.builtin.assert:
-    that:
-      - item.chain is defined
-    fail_msg: "Every nftables rule must define a chain."
-  loop: "{{ nftables_all_rules }}"
-  vars:
-    nftables_all_rules: >-
-      {{ (nftables_rules | default([]))
-         + (nftables_input_rules | default([]))
-         + (nftables_forward_rules | default([]))
-         + (nftables_nat_rules | default([])) }}
-  loop_control:
-    label: "{{ item | to_json }}"
-
 - name: Validate nftables references
   ansible.builtin.assert:
     that:
       - item.service is not defined or item.service in nftables_services
       - item.destination_host is not defined or item.destination_host in nftables_hosts
+      - item.dnat_to is not defined or item.dnat_to in nftables_hosts
       - item.source_group is not defined or item.source_group in nftables_host_groups
       - item.destination_group is not defined or item.destination_group in nftables_host_groups
+      - item.source_network is not defined or '/' in item.source_network or item.source_network in nftables_networks
+      - item.destination_network is not defined or '/' in item.destination_network or item.destination_network in nftables_networks
     fail_msg: "Rule references an undefined nftables object."
-  loop: "{{ nftables_all_rules }}"
+  loop: "{{ nftables_effective_rules }}"
   vars:
-    nftables_all_rules: >-
-      {{ (nftables_rules | default([]))
-         + (nftables_input_rules | default([]))
-         + (nftables_forward_rules | default([]))
-         + (nftables_nat_rules | default([])) }}
+    nftables_effective_rules: >-
+      {{ (nftables_input_rules | default([]) | nftables_expand('input', nftables_services))
+         + (nftables_forward_rules | default([]) | nftables_expand('forward', nftables_services))
+         + (nftables_nat_rules | default([]) | nftables_expand('nat', nftables_services))
+         + (nftables_rules | default([]) | nftables_expand('generic', nftables_services)) }}
   loop_control:
     label: "{{ item | to_json }}"
 

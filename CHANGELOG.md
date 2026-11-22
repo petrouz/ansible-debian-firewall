@@ -5,6 +5,7 @@ All notable changes to this project are documented here.
 ## Unreleased
 
 - Added structured nftables services, hosts, groups and rules
+- Reworked nftables rule declarations: chain and action are inferred, `from`/`to` replace the interface keys, `rules` blocks share common matches, networks are named and DNAT expands services per port
 - Added support for Debian 13 and Debian 14
 - Added Molecule validation for the nftables role
 - Added GitHub Actions validation with yamllint, ansible-lint and syntax checks
